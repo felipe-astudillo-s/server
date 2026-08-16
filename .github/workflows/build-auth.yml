@@ -1,12 +1,13 @@
-name: Build AuthSetup
+name: Build mcbackup
 
 # Compila el .jar y lo publica en Releases.
-# El hoster despues solo descarga y corre `java -jar authsetup.jar`:
+# El hoster despues solo descarga y corre `java -jar mcbackup.jar`:
 # no necesita JDK, ni Python, ni instalar nada.
 
 on:
   push:
     tags: ["v*"]
+  pull_request:
   workflow_dispatch:   # para poder correrlo a mano desde la web
 
 permissions:
@@ -29,23 +30,25 @@ jobs:
         # Minecraft 1.20+ ya pide Java 17, asi que todo hoster lo cumple.
         run: |
           mkdir -p build
-          javac --release 17 -d build AuthSetup.java
+          javac --release 17 -Xlint:all -d build *.java
 
       - name: Empaquetar el jar
-        run: jar --create --file authsetup.jar --main-class AuthSetup -C build .
+        run: jar --create --file mcbackup.jar --main-class Main -C build .
 
       - name: Verificar que arranca
-        run: java -jar authsetup.jar --help
+        run: |
+          java -jar mcbackup.jar --help
+          java -jar mcbackup.jar auth --help
 
       - name: Publicar en Releases
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: authsetup.jar
+          files: mcbackup.jar
 
       - name: Guardar como artifact
         if: "!startsWith(github.ref, 'refs/tags/')"
         uses: actions/upload-artifact@v4
         with:
-          name: authsetup-jar
-          path: authsetup.jar
+          name: mcbackup-jar
+          path: mcbackup.jar

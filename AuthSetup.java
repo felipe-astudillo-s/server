@@ -27,11 +27,11 @@ import java.util.regex.Pattern;
 /**
  * Setup de autenticacion en un solo paso.
  *
- *   El hoster corre:   java -jar authsetup.jar
+ *   El hoster corre:   java -jar mcbackup.jar auth
  *   ...se le abre el navegador, hace click en "Permitir", y listo.
  *
  *   Server sin navegador (VPS headless):
- *                      java -jar authsetup.jar --manual
+ *                      java -jar mcbackup.jar auth --manual
  *
  * No necesita instalar nada: el jar corre en cualquier JRE 17+, asi que si
  * puede correr un server de Minecraft, ya tiene todo lo que hace falta.
@@ -108,7 +108,7 @@ public class AuthSetup {
                 case "--provider" -> providerName = args[++i];
                 case "--help", "-h" -> {
                     System.out.println("""
-                        Uso: java -jar authsetup.jar [opciones]
+                        Uso: java -jar mcbackup.jar auth [opciones]
 
                           --provider google|microsoft   proveedor (por defecto: google)
                           --manual                      para servers sin navegador
@@ -245,13 +245,13 @@ public class AuthSetup {
     /** Lo que usa el resto del proyecto. Refresca solo si hace falta. */
     public static String getAccessToken() throws Exception {
         if (!Files.exists(TOKEN_FILE)) {
-            exit("No hay credenciales. Corre primero: java -jar authsetup.jar");
+            exit("No hay credenciales. Corre primero: java -jar mcbackup.jar auth");
         }
         String saved = Files.readString(TOKEN_FILE);
         Provider cfg = PROVIDERS.get(jsonField(saved, "provider"));
         String refreshToken = jsonField(saved, "refresh_token");
         if (refreshToken == null) {
-            exit("No se guardo refresh_token. Volve a correr: java -jar authsetup.jar");
+            exit("No se guardo refresh_token. Volve a correr: java -jar mcbackup.jar auth");
         }
 
         var form = new LinkedHashMap<String, String>();

@@ -1,6 +1,13 @@
 # Credenciales del hoster: NUNCA al repo.
 .auth_tokens.json
 
+# Configuracion local del hoster (se genera sola)
+backup.properties
+
+# Zips temporales y logs
+backup-*.zip
+*.log
+
 # Salida de compilacion
 build/
 *.jar

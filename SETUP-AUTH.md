@@ -1,25 +1,10 @@
-# Autenticacion con Google Drive
+# Registrar el cliente OAuth (solo el dueno del proyecto)
 
-## Para el que hostea
+> Si vos vas a **hostear** un server, no necesitas nada de esto: lo tuyo esta
+> en el [README](README.md) y son dos comandos. Este documento es para quien
+> mantiene el proyecto.
 
-```bash
-java -jar authsetup.jar
-```
-
-Se abre el navegador, click en "Permitir", listo. El token queda guardado y se
-renueva solo. No hay que crear nada en ninguna consola de Google.
-
-Si el server es un VPS sin navegador:
-
-```bash
-java -jar authsetup.jar --manual
-```
-
-Te da un link para abrir desde el celular o cualquier otra compu.
-
----
-
-## Para el dueno del proyecto (una sola vez)
+## Una sola vez
 
 Esto se hace **una vez**, no por cada hoster. Despues queda commiteado en
 `AuthSetup.java` y nadie mas lo toca.
