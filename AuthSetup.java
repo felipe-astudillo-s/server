@@ -58,8 +58,8 @@ public class AuthSetup {
             "https://accounts.google.com/o/oauth2/v2/auth",
             "https://oauth2.googleapis.com/token",
             // Ver SETUP-AUTH.md: se registra una vez, tipo "App de escritorio".
-            "892491461504-fl566n7o9cc2ve936kh9sl6bfprcmoh9.apps.googleusercontent.com",
-            "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",
+            "861882695216-2urm2rbfqqmpbas24augs7avv5kl5m08.apps.googleusercontent.com",
+            "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",
             // drive.file = solo los archivos que crea esta app. Alcanza para
             // subir backups y es scope NO sensible: evita la auditoria de
             // seguridad que Google exige para el scope 'drive' completo.

@@ -1,133 +1,108 @@
-# Backups de Minecraft a Google Drive
+# Server de Minecraft compartido
 
-Sube el mundo de tu server a tu propio Google Drive, solo, todos los días.
+Un mundo, varios anfitriones. Cualquiera del grupo puede levantar el server: el
+mundo se baja solo antes de jugar y se sube solo al cerrar, así todos siguen
+siempre desde donde quedó el anterior.
 
-No hay que crear nada en ninguna consola de Google, ni instalar Python, ni
-compilar nada. Si tu server de Minecraft arranca, esto también.
+Reemplaza a mcsync. No hace falta rclone, ni Python, ni crear nada en consolas
+de Google.
 
 ## Requisitos
 
-Java 17 o superior — el mismo que ya necesitás para correr el server.
+Java 17 o superior. Bajalo de [adoptium.net](https://adoptium.net) si no lo tenés.
 
-## Instalación
+## Primera vez
 
-1. Descargá `mcbackup.jar` de la sección [Releases](../../releases).
-2. Ponelo en la carpeta del server, al lado de `server.jar`.
+1. Descargá `mcbackup.zip` de [Releases](../../releases) y descomprimilo en una
+   carpeta vacía.
+2. Doble click en **`instalar.bat`** (o `./instalar.sh` en Linux/Mac).
 
-## Paso 1: conectar tu Google Drive
+El instalador baja el servidor Fabric, los mods de rendimiento, te pide aceptar
+el EULA de Minecraft y conecta Google Drive.
+
+> **Importante:** cuando se abra el navegador, entrá con la **cuenta de Google
+> compartida del grupo**, no con la tuya personal. Todos los que hostean usan la
+> misma cuenta — es lo que hace que cada uno vea el mundo que dejó el anterior.
+
+## Para jugar
+
+Doble click en **`jugar.bat`**. Eso hace todo:
+
+1. Reserva el mundo, para que nadie más lo levante mientras jugás
+2. Baja el mundo más reciente desde Drive
+3. Abre el server
+4. Cuando cerrás, sube el mundo con tus cambios
+5. Libera la reserva
+
+**Para cerrar, escribí `stop` en la consola del server.** No cierres la ventana
+con la X ni con Ctrl+C: si lo hacés, el mundo no se sube y tus cambios quedan
+solo en tu máquina.
+
+## Comandos
+
+| Comando | Qué hace |
+|---|---|
+| `java -jar mcbackup.jar host` | Jugar (lo que hace `jugar.bat`) |
+| `java -jar mcbackup.jar estado` | Ver si alguien está hosteando ahora |
+| `java -jar mcbackup.jar list` | Ver los mundos guardados en Drive |
+| `java -jar mcbackup.jar backup` | Subir un backup sin abrir el server |
+
+## Si alguien deja el mundo trabado
+
+Si a quien estaba hosteando se le cortó la luz, la reserva puede quedar tomada.
+Primero fijate quién la tiene:
 
 ```bash
-java -jar mcbackup.jar auth
+java -jar mcbackup.jar estado
 ```
 
-Se abre el navegador, elegís tu cuenta, hacés click en **Permitir**, y listo.
-Esto se hace **una sola vez**: después se renueva solo.
-
-Los backups van a **tu** Drive, no al de nadie más. La app solo puede ver y
-tocar los archivos que ella misma crea: no tiene acceso al resto de tu Drive.
-
-¿El server es un VPS sin navegador?
+Si confirmaste que esa persona **no** está jugando, podés liberarla:
 
 ```bash
-java -jar mcbackup.jar auth --manual
+java -jar mcbackup.jar host --forzar
 ```
 
-Te da un link para abrir desde el celular o cualquier otra computadora.
+Las reservas de más de 12 horas se liberan solas.
 
-## Paso 2: configurar
+> Ojo con esto: si forzás mientras alguien realmente está jugando, van a quedar
+> dos mundos distintos y el que suba último pisa al otro. Los mundos de
+> Minecraft no se pueden fusionar — lo que se pierde, se pierde. Preguntá antes.
 
-```bash
-java -jar mcbackup.jar backup
-```
+## Configuración
 
-La primera vez crea `backup.properties` y se detiene para que lo revises. Los
-valores que importan:
+Está en `backup.properties`, que crea el instalador:
 
 | Opción | Para qué sirve |
 |---|---|
-| `server.dir` | Carpeta del server. `.` si el jar está adentro. |
-| `world.folders` | Mundos a respaldar. Vanilla usa solo `world`; Paper y Spigot separan las dimensiones. Los que no existan se ignoran. |
-| `retention` | Cuántos backups conservar. Los más viejos se borran solos. |
-| `rcon.*` | Ver abajo. Muy recomendado. |
+| `player.name` | Tu nombre, para que los demás sepan quién tiene el mundo |
+| `server.ram` | Memoria del server. `4G` está bien para 8 GB de RAM |
+| `retention` | Cuántas versiones guardar en Drive. Las viejas se borran solas |
+| `rcon.*` | Lo usa la herramienta para pausar el guardado antes de copiar |
 
-### Activá RCON
+## Cómo se cuidan tus datos
 
-Sin RCON, el mundo se copia **mientras el server está escribiendo**, y el
-backup puede salir corrupto — de esos que parecen estar bien hasta el día que
-los necesitás. Con RCON, la herramienta le pide al server que pause el guardado
-durante la compresión y lo reactiva enseguida.
+**El mundo local nunca se borra.** Cuando se baja uno de Drive, el que tenías se
+renombra a `world.anterior-<fecha>`. Si algo sale mal, tu partida sigue ahí. Con
+el tiempo se acumulan y los podés borrar a mano.
 
-En el `server.properties` del server:
+**Los backups se hacen con el guardado pausado.** Antes de comprimir, se le pide
+al server que deje de escribir el mundo (por RCON) y se reactiva enseguida. Sin
+eso, un backup tomado a mitad de una escritura puede quedar corrupto.
 
-```
-enable-rcon=true
-rcon.port=25575
-rcon.password=poné-algo-difícil
-```
-
-Reiniciá el server. Después, en `backup.properties`, poné `rcon.enabled=true` y
-la misma contraseña.
-
-## Paso 3: probarlo
-
-```bash
-java -jar mcbackup.jar backup
-```
-
-Y para ver lo que hay guardado en Drive:
-
-```bash
-java -jar mcbackup.jar list
-```
-
-## Paso 4: que corra solo
-
-### Linux
-
-```bash
-crontab -e
-```
-
-Agregá esta línea para un backup diario a las 4 de la mañana (cambiá la ruta):
-
-```
-0 4 * * * cd /ruta/a/tu/server && java -jar mcbackup.jar backup >> backup.log 2>&1
-```
-
-### Windows
-
-En PowerShell **como administrador**, cambiando la ruta:
-
-```bash
-schtasks /create /tn "Backup Minecraft" /sc daily /st 04:00 /tr "cmd /c cd /d C:\ruta\a\tu\server && java -jar mcbackup.jar backup >> backup.log 2>&1"
-```
-
-Elegí un horario con el server vacío: la compresión ocupa disco y CPU.
-
-## Restaurar un backup
-
-Un backup que nunca probaste restaurar no es un backup. Probá esto una vez,
-con calma, antes de necesitarlo de verdad:
-
-1. **Pará el server.** Sin excepciones — si está corriendo, va a pisar lo que
-   restaures.
-2. Descargá el `.zip` desde tu Google Drive, carpeta *Minecraft Backups*.
-3. Renombrá la carpeta `world` actual a `world-roto` (no la borres todavía).
-4. Descomprimí el zip en la carpeta del server: recrea `world/` tal cual estaba.
-5. Arrancá el server y verificá que todo esté en su lugar.
-6. Recién ahí borrá `world-roto`.
+**Las subidas se reanudan.** Si se corta internet a mitad de camino, retoma desde
+donde quedó en vez de empezar de cero.
 
 ## Preguntas
 
-**¿Cuánto ocupa en mi Drive?** Un mundo comprimido suele ir de decenas de MB a
-un par de GB. Con `retention=7` guardás una semana. Si te queda justo, bajá el
-número.
+**¿Puedo jugar sin internet?** No con `jugar.bat`, porque necesita Drive para
+reservar y bajar el mundo. Podés arrancar el server a mano, pero después nadie
+más va a tener tus cambios.
 
-**¿Puedo tener varios servers en la misma cuenta?** Sí, pero cambiales el
-`drive.folder` a cada uno, o van a competir por la misma retención.
+**¿Y si dos empezamos a la vez?** La reserva lo impide: el segundo recibe un
+aviso de quién está hosteando.
 
-**Se cortó internet a mitad de la subida.** No pasa nada: la subida es
-resumible, retoma desde donde quedó en vez de empezar de cero.
+**¿Dónde quedan mis credenciales?** En `.auth_tokens.json`, en tu carpeta. No lo
+compartas ni lo subas a ningún lado.
 
-**¿Y el archivo `.auth_tokens.json`?** Son tus credenciales. No lo subas a
-ningún lado ni lo compartas.
+**¿Cuánto ocupa en Drive?** Un mundo comprimido va de decenas de MB a un par de
+GB. Con `retention=7` guardás siete versiones.

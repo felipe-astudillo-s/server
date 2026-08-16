@@ -35,9 +35,13 @@ public class Backup {
     static final String ARCHIVO_IGNORADO = "session.lock";
 
     public static void main(String[] args) throws Exception {
+        hacer(cargarConfig());
+    }
+
+    /** El backup en si. Lo reutiliza 'host' para subir el mundo al cerrar. */
+    public static void hacer(Properties cfg) throws Exception {
         Instant arranque = Instant.now();
 
-        Properties cfg = cargarConfig();
         Path servidor = Path.of(cfg.getProperty("server.dir", "."));
         List<Path> mundos = mundosExistentes(servidor, cfg.getProperty("world.folders", "world"));
 
@@ -178,8 +182,15 @@ public class Backup {
             Files.writeString(CONFIG, """
                 # Configuracion de los backups.
 
+                # Tu nombre, para que los demas sepan quien tiene el mundo.
+                player.name=
+
                 # Carpeta donde vive el server (donde esta server.jar).
                 server.dir=.
+
+                # Archivo del server y memoria a asignarle.
+                server.jar=server.jar
+                server.ram=4G
 
                 # Carpetas de mundo a respaldar, separadas por coma.
                 # Vanilla usa solo 'world'; Paper y Spigot separan las dimensiones.

@@ -40,15 +40,25 @@ jobs:
           java -jar mcbackup.jar --help
           java -jar mcbackup.jar auth --help
 
+      - name: Armar el zip que descarga el hoster
+        # Con los scripts adentro: el hoster descomprime y hace doble click,
+        # sin tener que escribir ningun comando.
+        run: |
+          mkdir -p paquete
+          cp mcbackup.jar instalar.bat jugar.bat instalar.sh jugar.sh README.md paquete/
+          cd paquete && zip -r ../mcbackup.zip .
+
       - name: Publicar en Releases
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: mcbackup.jar
+          files: |
+            mcbackup.zip
+            mcbackup.jar
 
       - name: Guardar como artifact
         if: "!startsWith(github.ref, 'refs/tags/')"
         uses: actions/upload-artifact@v4
         with:
-          name: mcbackup-jar
-          path: mcbackup.jar
+          name: mcbackup
+          path: mcbackup.zip

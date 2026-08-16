@@ -11,21 +11,29 @@ import java.util.List;
 public class Main {
 
     static final String AYUDA = """
-        Backups de Minecraft a Google Drive.
+        Server de Minecraft compartido, sincronizado por Google Drive.
 
-          java -jar mcbackup.jar auth      conecta tu cuenta de Google (una sola vez)
-          java -jar mcbackup.jar backup    hace un backup ahora
+          java -jar mcbackup.jar instalar  arma el server desde cero (primera vez)
+          java -jar mcbackup.jar auth      conecta la cuenta del mundo (una sola vez)
+          java -jar mcbackup.jar host      JUGAR: baja el mundo, abre el server, lo sube al cerrar
+          java -jar mcbackup.jar estado    muestra si alguien esta hosteando ahora
+          java -jar mcbackup.jar detener   apaga un server que quedo colgado sin ventana
+          java -jar mcbackup.jar backup    sube un backup sin abrir el server
           java -jar mcbackup.jar list      muestra los backups que hay en Drive
 
         La configuracion vive en backup.properties, que se crea solo la primera
-        vez que corres 'backup'.""";
+        vez que corres cualquiera de estos comandos.""";
 
     public static void main(String[] args) throws Exception {
         String comando = args.length > 0 ? args[0] : "";
         String[] resto = args.length > 1 ? Arrays.copyOfRange(args, 1, args.length) : new String[0];
 
         switch (comando) {
+            case "instalar", "setup" -> Instalar.main(resto);
             case "auth" -> AuthSetup.main(resto);
+            case "host", "jugar" -> Host.main(resto);
+            case "estado" -> estado();
+            case "detener", "stop" -> detener();
             case "backup" -> Backup.main(resto);
             case "list" -> listar();
             case "", "--help", "-h", "help" -> System.out.println(AYUDA);
@@ -35,6 +43,50 @@ public class Main {
                 System.exit(1);
             }
         }
+    }
+
+    /**
+     * Apaga por RCON un server que quedo corriendo sin ventana visible.
+     *
+     * Pasa cuando se cierra la consola sin escribir 'stop': el proceso queda
+     * vivo, con el mundo tomado, y no hay forma obvia de llegarle. Matar el
+     * proceso funcionaria, pero perderia lo ultimo sin guardar; esto lo apaga
+     * como corresponde.
+     */
+    static void detener() throws Exception {
+        var cfg = Backup.cargarConfig();
+
+        if (!Boolean.parseBoolean(cfg.getProperty("rcon.enabled", "false").trim())) {
+            AuthSetup.exit("Para usar esto hace falta rcon.enabled=true en backup.properties.");
+        }
+
+        try (Rcon rcon = new Rcon(cfg.getProperty("rcon.host", "127.0.0.1"),
+                                  Integer.parseInt(cfg.getProperty("rcon.port", "25575").trim()),
+                                  cfg.getProperty("rcon.password", ""))) {
+            System.out.println("Guardando el mundo...");
+            rcon.comando("save-all flush");
+            System.out.println("Apagando el server...");
+            try {
+                rcon.comando("stop");
+            } catch (Exception seCorto) {
+                // El server cierra la conexion mientras se apaga: es lo normal.
+            }
+            System.out.println("Listo, el server se esta cerrando.");
+        } catch (java.net.ConnectException noHayNadie) {
+            System.out.println("No hay ningun server corriendo: no hay nada que apagar.");
+        }
+    }
+
+    /** Quien tiene el mundo tomado ahora mismo. */
+    static void estado() throws Exception {
+        String token = AuthSetup.getAccessToken();
+        var cfg = Backup.cargarConfig();
+        String carpeta = Drive.buscarOCrearCarpeta(token, cfg.getProperty("drive.folder", "Minecraft Backups"));
+
+        String duenio = Sesion.duenioActual(token, carpeta);
+        System.out.println(duenio == null
+            ? "El mundo esta libre: podes hostear cuando quieras."
+            : "Lo esta hosteando " + duenio);
     }
 
     static void listar() throws Exception {

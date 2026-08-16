@@ -173,6 +173,65 @@ public class Drive {
     }
 
     // -----------------------------------------------------------------------
+    // Archivos chicos (el candado) y descargas
+    // -----------------------------------------------------------------------
+
+    /** Devuelve el id de un archivo por nombre exacto, o null si no esta. */
+    public static String buscarPorNombre(String token, String carpetaId, String nombre) throws Exception {
+        String consulta = "'" + carpetaId + "' in parents and trashed=false"
+                        + " and name='" + nombre.replace("'", "\\'") + "'";
+        String url = API + "?q=" + URLEncoder.encode(consulta, StandardCharsets.UTF_8)
+                   + "&fields=" + URLEncoder.encode("files(id,name)", StandardCharsets.UTF_8);
+
+        List<String[]> hallados = extraerArchivos(pedir(HttpRequest.newBuilder(URI.create(url)).GET(), token));
+        return hallados.isEmpty() ? null : hallados.get(0)[0];
+    }
+
+    /** Sube un archivo de texto chico (multipart, sin sesion resumible). */
+    public static String subirTexto(String token, String nombre, String contenido, String carpetaId)
+            throws Exception {
+        String limite = "-------mcbackup" + System.nanoTime();
+        String cuerpo = "--" + limite + "\r\n"
+                      + "Content-Type: application/json; charset=UTF-8\r\n\r\n"
+                      + "{\"name\":\"" + escapar(nombre) + "\",\"parents\":[\"" + carpetaId + "\"]}\r\n"
+                      + "--" + limite + "\r\n"
+                      + "Content-Type: application/json; charset=UTF-8\r\n\r\n"
+                      + contenido + "\r\n"
+                      + "--" + limite + "--";
+
+        HttpResponse<String> r = CLIENTE.send(
+            HttpRequest.newBuilder(URI.create(API_UPLOAD + "?uploadType=multipart&fields=id"))
+                .header("Authorization", "Bearer " + token)
+                .header("Content-Type", "multipart/related; boundary=" + limite)
+                .POST(HttpRequest.BodyPublishers.ofString(cuerpo, StandardCharsets.UTF_8))
+                .build(),
+            HttpResponse.BodyHandlers.ofString());
+
+        if (r.statusCode() >= 400) {
+            throw new IOException("No se pudo crear " + nombre + " (" + r.statusCode() + "): " + r.body());
+        }
+        return campo(r.body(), "id");
+    }
+
+    public static String descargarTexto(String token, String archivoId) throws Exception {
+        return pedir(HttpRequest.newBuilder(URI.create(API + "/" + archivoId + "?alt=media")).GET(), token);
+    }
+
+    /** Baja un archivo grande al disco, mostrando el avance. */
+    public static void descargar(String token, String archivoId, Path destino) throws Exception {
+        HttpResponse<Path> r = CLIENTE.send(
+            HttpRequest.newBuilder(URI.create(API + "/" + archivoId + "?alt=media"))
+                .header("Authorization", "Bearer " + token)
+                .GET()
+                .build(),
+            HttpResponse.BodyHandlers.ofFile(destino));
+
+        if (r.statusCode() >= 400) {
+            throw new IOException("No se pudo descargar (" + r.statusCode() + ")");
+        }
+    }
+
+    // -----------------------------------------------------------------------
     // Listado y borrado
     // -----------------------------------------------------------------------
 
