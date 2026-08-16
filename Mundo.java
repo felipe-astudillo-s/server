@@ -45,6 +45,9 @@ public class Mundo {
             apartarMundoLocal(servidor, cfg);
             System.out.println("Instalando el mundo...");
             descomprimir(zip, servidor);
+            // La whitelist, los ops y las reglas de juego viajan con el mundo:
+            // sin esto, los jugadores entrarian solo cuando hostea uno del grupo.
+            Compartido.aplicar(servidor);
             anotarOrigen(servidor, ultimo[0], ultimo[1]);
         } finally {
             Files.deleteIfExists(zip);

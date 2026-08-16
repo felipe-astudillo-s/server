@@ -77,6 +77,23 @@ Lo correcto es simplemente jugar, que descarga el mundo actualizado:
 java -jar mcbackup.jar host
 ```
 
+## Windows bloquea `jugar.bat`
+
+Es la marca que Windows le pone a lo descargado de internet. Abre PowerShell en
+la carpeta y ejecuta:
+
+```bash
+Get-ChildItem -Include *.bat,*.jar -Recurse | Unblock-File
+```
+
+**No desactives el Control inteligente de aplicaciones**: no se puede volver a
+activar sin reinstalar Windows. Si prefieres no tocar nada, este comando hace lo
+mismo que el `.bat`:
+
+```bash
+java -jar mcbackup.jar host
+```
+
 ## El server no arranca
 
 Si cierra a los pocos segundos, el programa lo detecta y **no sube nada**, para
@@ -110,6 +127,40 @@ Cada vez que descargas un mundo, el que tenías se guarda como
 
 Si cerraste mal y perdiste tu partida, está ahí. Se van acumulando, así que
 puedes borrar las viejas cuando confirmes que el mundo actual está bien.
+
+---
+
+# Quién puede entrar
+
+La lista de jugadores permitidos (*whitelist*) **viaja con el mundo**. Agregas a
+alguien una vez, desde cualquier computadora, y queda agregado para todos los
+que hospeden.
+
+Con el server abierto, escribe en su consola:
+
+```bash
+whitelist add NombreDeMinecraft
+```
+
+Otros comandos útiles, en la misma consola:
+
+| Comando | Qué hace |
+|---|---|
+| `whitelist list` | Ver quiénes están autorizados |
+| `whitelist remove <nombre>` | Sacar a alguien |
+| `whitelist on` / `off` | Activar o desactivar la lista |
+| `op <nombre>` | Dar permisos de administrador |
+
+Cuando cierres con `stop`, esos cambios se suben junto con el mundo y el próximo
+que hospede los recibe automáticamente.
+
+## Qué se comparte y qué no
+
+**Viaja con el mundo:** la whitelist, los operadores, los baneos, y las reglas de
+juego — `motd`, dificultad, PvP, máximo de jugadores, modo de juego.
+
+**Se queda en cada computadora:** el puerto, la IP y la contraseña de RCON. Son
+de cada instalación; copiarlas rompería la del que recibe.
 
 ---
 

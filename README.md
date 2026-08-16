@@ -22,11 +22,40 @@ Nada más: ni Python, ni rclone, ni crear nada en consolas de Google.
 
 ### 1. Descarga el programa
 
-Descarga **`mcbackup.zip`** de [Releases](../../releases) y descomprímelo en una
-carpeta vacía. Esa carpeta va a ser tu server.
+Descarga **`mcbackup.zip`** de [Releases](../../releases).
+
+**Antes de descomprimirlo:** clic derecho en el `.zip` → **Propiedades** → marca
+**Desbloquear** abajo → Aceptar.
+
+Windows le pone una marca a todo lo que descargas, y si descomprimes sin quitarla
+esa marca pasa a los archivos de adentro. Después el "Control inteligente de
+aplicaciones" bloquea el `instalar.bat` sin explicar por qué. Desbloquear el zip
+primero evita el problema entero, de una sola vez.
+
+Ya desbloqueado, descomprímelo en una carpeta vacía. Esa carpeta va a ser tu
+server.
 
 > Ponla en un disco con espacio y **fuera de OneDrive o Dropbox**: si una de esas
 > carpetas sincroniza el mundo mientras el server escribe, lo corrompe.
+
+### Si ya lo descomprimiste y te lo bloquea
+
+Abre PowerShell en la carpeta y ejecuta:
+
+```bash
+Get-ChildItem -Include *.bat,*.jar -Recurse | Unblock-File
+```
+
+**No desactives el Control inteligente de aplicaciones.** Windows no te deja
+volver a activarlo después: para recuperarlo hay que reinstalar el sistema. No
+vale la pena por esto.
+
+Si aun así no puedes ejecutar el `.bat`, siempre te queda el comando directo, que
+hace exactamente lo mismo:
+
+```bash
+java -jar mcbackup.jar instalar
+```
 
 ### 2. Ejecuta el instalador
 

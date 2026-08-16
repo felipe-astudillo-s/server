@@ -120,11 +120,12 @@ public class Backup {
     // -----------------------------------------------------------------------
 
     static void comprimirConServerQuieto(Properties cfg, List<Path> mundos, Path zip) throws Exception {
+        Path servidor = Path.of(cfg.getProperty("server.dir", "."));
         boolean usarRcon = Boolean.parseBoolean(cfg.getProperty("rcon.enabled", "false").trim());
 
         if (!usarRcon) {
             System.out.println("Comprimiendo (RCON desactivado)...");
-            comprimir(mundos, zip);
+            comprimir(mundos, zip, servidor);
             System.out.println("  ojo: sin RCON el mundo se copia mientras el server escribe.");
             System.out.println("  Para un backup consistente, activa rcon.enabled en " + CONFIG);
             return;
@@ -141,7 +142,7 @@ public class Backup {
             // Una contrasena mal puesta no cae aca: esa si corta el backup.
             System.out.println("El server no responde por RCON, parece estar apagado.");
             System.out.println("Se comprime igual: apagado, el mundo no se esta escribiendo.");
-            comprimir(mundos, zip);
+            comprimir(mundos, zip, servidor);
             return;
         }
 
@@ -152,7 +153,7 @@ public class Backup {
                 rcon.comando("save-all flush");
 
                 System.out.println("Comprimiendo el mundo...");
-                comprimir(mundos, zip);
+                comprimir(mundos, zip, servidor);
             } finally {
                 // Pase lo que pase, el server tiene que volver a guardar. Si esto
                 // no corriera, el mundo dejaria de persistir sin ningun aviso.
@@ -163,8 +164,18 @@ public class Backup {
     }
 
     static void comprimir(List<Path> mundos, Path destino) throws IOException {
+        comprimir(mundos, destino, null);
+    }
+
+    /**
+     * @param servidor si no es null, ademas del mundo se guarda la configuracion
+     *                 del grupo (whitelist, ops, baneos y reglas de juego).
+     */
+    static void comprimir(List<Path> mundos, Path destino, Path servidor) throws IOException {
         try (OutputStream os = Files.newOutputStream(destino);
              ZipOutputStream zip = new ZipOutputStream(os)) {
+
+            if (servidor != null) Compartido.agregarAlZip(zip, servidor);
 
             for (Path mundo : mundos) {
                 Path raiz = mundo.getParent() == null ? mundo : mundo.getParent();

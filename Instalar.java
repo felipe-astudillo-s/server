@@ -209,6 +209,12 @@ public class Instalar {
             view-distance=10
             server-port=25565
 
+            # Lista de jugadores permitidos. Empieza apagada para que puedas
+            # entrar; para activarla, en la consola del server: whitelist on
+            # Se sincroniza con el resto del grupo junto con el mundo.
+            white-list=false
+            enforce-whitelist=false
+
             # RCON: lo usa la herramienta de backups para pausar el guardado
             # antes de copiar el mundo. Sin esto los backups pueden salir rotos.
             enable-rcon=true
