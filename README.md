@@ -22,45 +22,32 @@ Nada más: ni Python, ni rclone, ni crear nada en consolas de Google.
 
 ### 1. Descarga el programa
 
-Descarga **`mcbackup.zip`** de [Releases](../../releases).
+Descarga **`mcbackup.jar`** de [Releases](../../releases) y ponlo en una carpeta
+vacía. Esa carpeta va a ser tu server.
 
-**Antes de descomprimirlo:** clic derecho en el `.zip` → **Propiedades** → marca
-**Desbloquear** abajo → Aceptar.
-
-Windows le pone una marca a todo lo que descargas, y si descomprimes sin quitarla
-esa marca pasa a los archivos de adentro. Después el "Control inteligente de
-aplicaciones" bloquea el `instalar.bat` sin explicar por qué. Desbloquear el zip
-primero evita el problema entero, de una sola vez.
-
-Ya desbloqueado, descomprímelo en una carpeta vacía. Esa carpeta va a ser tu
-server.
+Es un solo archivo: no hay nada que descomprimir.
 
 > Ponla en un disco con espacio y **fuera de OneDrive o Dropbox**: si una de esas
 > carpetas sincroniza el mundo mientras el server escribe, lo corrompe.
 
-### Si te lo bloquea igual
+### 2. Ejecuta el instalador
 
-Abre PowerShell en la carpeta (clic derecho en un espacio vacío → "Abrir en
-Terminal") y ejecuta:
+Abre una terminal **en esa carpeta**: clic derecho en un espacio vacío →
+**"Abrir en Terminal"**. Después escribe:
 
 ```bash
 java -jar mcbackup.jar instalar
 ```
 
-**Esto siempre funciona.** El bloqueo aplica a los scripts, no al `.jar`: para
-Windows, ese archivo son datos que le pasas a Java, y Java ya está firmado.
-
-Y es la única vez que lo vas a necesitar: al terminar, el instalador **vuelve a
-crear `jugar.bat`** en tu carpeta. Como lo genera tu propia computadora, nace sin
-la marca y ya no lo bloquea nadie. De ahí en adelante es doble clic y listo.
-
-> **No desactives el Control inteligente de aplicaciones.** Windows no te deja
-> volver a activarlo: para recuperarlo hay que reinstalar el sistema. No vale la
-> pena por esto.
-
-### 2. Ejecuta el instalador
-
-Doble clic en **`instalar.bat`** (en Linux o Mac: `./instalar-linux.sh`).
+> **¿Por qué un comando y no un doble clic?** Windows bloquea los archivos `.bat`
+> descargados de internet, y no hay manera de evitarlo sin comprar un certificado
+> de firma digital. Este comando funciona siempre, en cualquier computadora.
+>
+> Y es la única vez que lo necesitas: el instalador crea un **`jugar.bat`** en tu
+> carpeta y, como lo genera tu propia computadora, ese sí abre con doble clic.
+>
+> **No desactives el Control inteligente de aplicaciones** para esquivar el
+> bloqueo: Windows no te deja volver a activarlo sin reinstalar el sistema.
 
 Va a hacer cinco cosas, mostrándote cada una:
 
