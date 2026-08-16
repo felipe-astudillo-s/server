@@ -79,20 +79,24 @@ java -jar mcbackup.jar host
 
 ## Windows bloquea `jugar.bat`
 
-Es la marca que Windows le pone a lo descargado de internet. Abre PowerShell en
-la carpeta y ejecuta:
+No debería pasarte: el instalador crea ese archivo en tu computadora, y por eso
+nace sin la marca que Windows le pone a lo descargado.
 
-```bash
-Get-ChildItem -Include *.bat,*.jar -Recurse | Unblock-File
-```
-
-**No desactives el Control inteligente de aplicaciones**: no se puede volver a
-activar sin reinstalar Windows. Si prefieres no tocar nada, este comando hace lo
-mismo que el `.bat`:
+Si de todos modos ocurre — por ejemplo, porque copiaste el `.bat` desde otra
+parte — este comando hace exactamente lo mismo y nunca se bloquea:
 
 ```bash
 java -jar mcbackup.jar host
 ```
+
+Y para dejar el `jugar.bat` limpio otra vez:
+
+```bash
+Unblock-File jugar.bat
+```
+
+**No desactives el Control inteligente de aplicaciones**: no se puede volver a
+activar sin reinstalar Windows.
 
 ## El server no arranca
 

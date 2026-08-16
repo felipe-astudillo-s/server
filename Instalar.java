@@ -79,6 +79,7 @@ public class Instalar {
         AuthSetup.main(new String[0]);
 
         escribirBackupProperties(destino, passwordRcon);
+        regenerarLanzadores(destino);
 
         System.out.println("""
 
@@ -259,6 +260,63 @@ public class Instalar {
             """.formatted(jugador.trim(), passwordRcon));
 
         System.out.println("backup.properties creado.");
+    }
+
+    // -----------------------------------------------------------------------
+    // Lanzadores
+    // -----------------------------------------------------------------------
+
+    /**
+     * Reescribe jugar.bat y jugar-linux.sh en la carpeta del server.
+     *
+     * Windows le pone una "marca de la web" a todo lo que sale de un zip
+     * descargado, y el Control inteligente de aplicaciones bloquea los scripts
+     * que la tienen. Un archivo que se crea localmente no la lleva, asi que
+     * generarlo aca deja el lanzador funcionando sin que nadie tenga que
+     * desbloquear nada a mano.
+     */
+    static void regenerarLanzadores(Path destino) throws IOException {
+        Files.writeString(destino.resolve("jugar.bat"), String.join("\r\n",
+            "@echo off",
+            "rem Abre el server. Descarga el mundo antes y lo sube al cerrar.",
+            "rem Para cerrar bien, escribe 'stop' en la consola del server.",
+            "cd /d \"%~dp0\"",
+            "",
+            "java -version >nul 2>&1",
+            "if errorlevel 1 (",
+            "    echo.",
+            "    echo No encuentro Java en esta computadora.",
+            "    echo Instalalo desde https://adoptium.net y vuelve a intentar.",
+            "    echo.",
+            "    pause",
+            "    exit /b 1",
+            ")",
+            "",
+            "java -jar mcbackup.jar host %*",
+            "echo.",
+            "pause",
+            ""));
+
+        Files.writeString(destino.resolve("jugar-linux.sh"), String.join("\n",
+            "#!/bin/sh",
+            "# Abre el server. Descarga el mundo antes y lo sube al cerrar.",
+            "cd \"$(dirname \"$0\")\" || exit 1",
+            "",
+            "if ! command -v java >/dev/null 2>&1; then",
+            "    echo \"No encuentro Java. Instalalo desde https://adoptium.net\"",
+            "    exit 1",
+            "fi",
+            "",
+            "exec java -jar mcbackup.jar host \"$@\"",
+            ""));
+
+        try {
+            destino.resolve("jugar-linux.sh").toFile().setExecutable(true);
+        } catch (SecurityException sinPermisos) {
+            // En Windows no aplica y no importa.
+        }
+
+        System.out.println("Lanzadores listos: jugar.bat quedo sin la marca de Windows.");
     }
 
     // -----------------------------------------------------------------------

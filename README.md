@@ -38,24 +38,25 @@ server.
 > Ponla en un disco con espacio y **fuera de OneDrive o Dropbox**: si una de esas
 > carpetas sincroniza el mundo mientras el server escribe, lo corrompe.
 
-### Si ya lo descomprimiste y te lo bloquea
+### Si te lo bloquea igual
 
-Abre PowerShell en la carpeta y ejecuta:
-
-```bash
-Get-ChildItem -Include *.bat,*.jar -Recurse | Unblock-File
-```
-
-**No desactives el Control inteligente de aplicaciones.** Windows no te deja
-volver a activarlo después: para recuperarlo hay que reinstalar el sistema. No
-vale la pena por esto.
-
-Si aun así no puedes ejecutar el `.bat`, siempre te queda el comando directo, que
-hace exactamente lo mismo:
+Abre PowerShell en la carpeta (clic derecho en un espacio vacío → "Abrir en
+Terminal") y ejecuta:
 
 ```bash
 java -jar mcbackup.jar instalar
 ```
+
+**Esto siempre funciona.** El bloqueo aplica a los scripts, no al `.jar`: para
+Windows, ese archivo son datos que le pasas a Java, y Java ya está firmado.
+
+Y es la única vez que lo vas a necesitar: al terminar, el instalador **vuelve a
+crear `jugar.bat`** en tu carpeta. Como lo genera tu propia computadora, nace sin
+la marca y ya no lo bloquea nadie. De ahí en adelante es doble clic y listo.
+
+> **No desactives el Control inteligente de aplicaciones.** Windows no te deja
+> volver a activarlo: para recuperarlo hay que reinstalar el sistema. No vale la
+> pena por esto.
 
 ### 2. Ejecuta el instalador
 
