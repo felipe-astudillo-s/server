@@ -4,105 +4,83 @@ Un mundo, varios anfitriones. Cualquiera del grupo puede levantar el server: el
 mundo se baja solo antes de jugar y se sube solo al cerrar, así todos siguen
 siempre desde donde quedó el anterior.
 
-Reemplaza a mcsync. No hace falta rclone, ni Python, ni crear nada en consolas
-de Google.
+> **¿Ya instalaste esto antes y solo querés jugar?**
+> Andá directo a **[JUGAR.md](JUGAR.md)**. Esta página es para la primera vez.
 
-## Requisitos
+---
 
-Java 17 o superior. Bajalo de [adoptium.net](https://adoptium.net) si no lo tenés.
+# Instalación (una sola vez)
 
-## Primera vez
+## Lo único que necesitás
 
-1. Descargá `mcbackup.zip` de [Releases](../../releases) y descomprimilo en una
-   carpeta vacía.
-2. Doble click en **`instalar.bat`** (o `./instalar.sh` en Linux/Mac).
+**Java 17 o superior.** Si no lo tenés, bajalo de [adoptium.net](https://adoptium.net)
+y dale siguiente a todo.
 
-El instalador baja el servidor Fabric, los mods de rendimiento, te pide aceptar
-el EULA de Minecraft y conecta Google Drive.
+Nada más: ni Python, ni rclone, ni crear nada en consolas de Google.
 
-> **Importante:** cuando se abra el navegador, entrá con la **cuenta de Google
-> compartida del grupo**, no con la tuya personal. Todos los que hostean usan la
-> misma cuenta — es lo que hace que cada uno vea el mundo que dejó el anterior.
+## Los pasos
 
-## Para jugar
+### 1. Descargá el programa
 
-Doble click en **`jugar.bat`**. Eso hace todo:
+Bajá **`mcbackup.zip`** de [Releases](../../releases) y descomprimilo en una
+carpeta vacía. Esa carpeta va a ser tu server.
 
-1. Reserva el mundo, para que nadie más lo levante mientras jugás
-2. Baja el mundo más reciente desde Drive
-3. Abre el server
-4. Cuando cerrás, sube el mundo con tus cambios
-5. Libera la reserva
+> Ponela en un disco con espacio y **fuera de OneDrive o Dropbox**: si una de
+> esas carpetas sincroniza el mundo mientras el server escribe, lo corrompe.
 
-**Para cerrar, escribí `stop` en la consola del server.** No cierres la ventana
-con la X ni con Ctrl+C: si lo hacés, el mundo no se sube y tus cambios quedan
-solo en tu máquina.
+### 2. Ejecutá el instalador
 
-## Comandos
+Doble click en **`instalar.bat`** (en Linux o Mac: `./instalar.sh`).
 
-| Comando | Qué hace |
-|---|---|
-| `java -jar mcbackup.jar host` | Jugar (lo que hace `jugar.bat`) |
-| `java -jar mcbackup.jar estado` | Ver si alguien está hosteando ahora |
-| `java -jar mcbackup.jar list` | Ver los mundos guardados en Drive |
-| `java -jar mcbackup.jar backup` | Subir un backup sin abrir el server |
+Va a hacer cinco cosas, mostrándote cada una:
 
-## Si alguien deja el mundo trabado
+1. Descargar el servidor Fabric de la última versión estable
+2. Instalar tres mods de rendimiento (lithium, ferritecore, krypton)
+3. Pedirte que aceptes el EULA de Minecraft — hay que escribir `acepto`
+4. Crear la configuración, con una contraseña de RCON generada al azar
+5. Abrir el navegador para conectar Google Drive
 
-Si a quien estaba hosteando se le cortó la luz, la reserva puede quedar tomada.
-Primero fijate quién la tiene:
+### 3. Entrá con la cuenta del grupo ← el paso que importa
+
+Cuando se abra el navegador, **iniciá sesión con la cuenta de Google compartida
+del grupo, no con la tuya personal.**
+
+Todos los que hostean usan esa misma cuenta. Es lo que hace que veas el mundo
+que dejó el anterior. Si entrás con tu cuenta personal, vas a tener un mundo
+tuyo, aislado, y nadie va a ver tus partidas.
+
+Si el navegador te loguea solo con tu cuenta, cerrá sesión primero o usá una
+ventana de incógnito.
+
+### 4. Listo
+
+Cuando termine, te va a decir cómo jugar. La carpeta queda con todo configurado
+y no hay que repetir nada de esto nunca más.
+
+**Seguí por [JUGAR.md](JUGAR.md).**
+
+---
+
+## Si algo sale mal
+
+**"No encuentro Java"** — no está instalado o no quedó en el PATH. Instalalo de
+[adoptium.net](https://adoptium.net) y volvé a abrir la ventana.
+
+**Un mod no se pudo descargar** — pasa cuando la versión de Minecraft es muy
+nueva y el mod todavía no salió para ella. El instalador lo avisa y sigue; el
+server anda igual, solo un poco menos optimizado.
+
+**Querés una versión específica de Minecraft** — corré desde la terminal:
 
 ```bash
-java -jar mcbackup.jar estado
+java -jar mcbackup.jar instalar --mc 1.21.4
 ```
 
-Si confirmaste que esa persona **no** está jugando, podés liberarla:
+**Ya tenías un server armado** — el instalador no pisa tu `server.properties`
+si ya existe. Solo te avisa si le falta RCON, que es lo que necesita para hacer
+backups sin corromper el mundo.
 
-```bash
-java -jar mcbackup.jar host --forzar
-```
+## Para el que mantiene el proyecto
 
-Las reservas de más de 12 horas se liberan solas.
-
-> Ojo con esto: si forzás mientras alguien realmente está jugando, van a quedar
-> dos mundos distintos y el que suba último pisa al otro. Los mundos de
-> Minecraft no se pueden fusionar — lo que se pierde, se pierde. Preguntá antes.
-
-## Configuración
-
-Está en `backup.properties`, que crea el instalador:
-
-| Opción | Para qué sirve |
-|---|---|
-| `player.name` | Tu nombre, para que los demás sepan quién tiene el mundo |
-| `server.ram` | Memoria del server. `4G` está bien para 8 GB de RAM |
-| `retention` | Cuántas versiones guardar en Drive. Las viejas se borran solas |
-| `rcon.*` | Lo usa la herramienta para pausar el guardado antes de copiar |
-
-## Cómo se cuidan tus datos
-
-**El mundo local nunca se borra.** Cuando se baja uno de Drive, el que tenías se
-renombra a `world.anterior-<fecha>`. Si algo sale mal, tu partida sigue ahí. Con
-el tiempo se acumulan y los podés borrar a mano.
-
-**Los backups se hacen con el guardado pausado.** Antes de comprimir, se le pide
-al server que deje de escribir el mundo (por RCON) y se reactiva enseguida. Sin
-eso, un backup tomado a mitad de una escritura puede quedar corrupto.
-
-**Las subidas se reanudan.** Si se corta internet a mitad de camino, retoma desde
-donde quedó en vez de empezar de cero.
-
-## Preguntas
-
-**¿Puedo jugar sin internet?** No con `jugar.bat`, porque necesita Drive para
-reservar y bajar el mundo. Podés arrancar el server a mano, pero después nadie
-más va a tener tus cambios.
-
-**¿Y si dos empezamos a la vez?** La reserva lo impide: el segundo recibe un
-aviso de quién está hosteando.
-
-**¿Dónde quedan mis credenciales?** En `.auth_tokens.json`, en tu carpeta. No lo
-compartas ni lo subas a ningún lado.
-
-**¿Cuánto ocupa en Drive?** Un mundo comprimido va de decenas de MB a un par de
-GB. Con `retention=7` guardás siete versiones.
+Si sos quien administra el repositorio y necesitás registrar el cliente OAuth,
+eso está en [SETUP-AUTH.md](SETUP-AUTH.md). Ningún jugador necesita leerlo.

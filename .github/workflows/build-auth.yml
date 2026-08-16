@@ -45,7 +45,7 @@ jobs:
         # sin tener que escribir ningun comando.
         run: |
           mkdir -p paquete
-          cp mcbackup.jar instalar.bat jugar.bat instalar.sh jugar.sh README.md paquete/
+          cp mcbackup.jar instalar.bat jugar.bat instalar.sh jugar.sh README.md JUGAR.md paquete/
           cd paquete && zip -r ../mcbackup.zip .
 
       - name: Publicar en Releases

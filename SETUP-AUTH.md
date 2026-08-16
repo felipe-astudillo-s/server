@@ -45,7 +45,8 @@ aparente. Ademas el modo Prueba tiene un tope de 100 usuarios.
 ### 5. Compilar y publicar
 
 ```bash
-git tag v1.0.0 && git push --tags
+git tag v1.0.0
+git push --tags
 ```
 
 El workflow compila el `.jar` y lo sube a Releases. Los hosters lo descargan de
@@ -71,10 +72,25 @@ PKCE. Es exactamente lo que hacen rclone, gcloud y el `gh` CLI.
 
 Dos consecuencias a tener en cuenta:
 
-- **La cuota de la API es del proyecto, compartida entre todos.** Para backups
-  (unas pocas subidas por dia y por hoster) sobra muy holgadamente.
-- Cada hoster autoriza **su propia cuenta** de Google: los backups van al Drive
-  de cada uno. El client ID compartido no da acceso cruzado entre hosters.
+- **La cuota de la API es del proyecto, compartida entre todos.** Para unas
+  pocas subidas por dia sobra muy holgadamente.
+- El client ID identifica a la *aplicacion*, no al usuario. Como la pantalla de
+  consentimiento es Externa y esta en Produccion, cualquier cuenta de Google
+  puede autorizarla: no hay que registrar un client nuevo por grupo.
+
+## Por que hace falta una cuenta de Google compartida
+
+El scope `drive.file` solo da acceso a los archivos que la app creo **para esa
+cuenta**. Si cada jugador entrara con su cuenta personal, cada uno veria unicamente
+su propio mundo, y compartir la carpeta no alcanzaria: la app del otro tampoco
+podria verla.
+
+Por eso todos los que hostean se autentican con **la misma cuenta del grupo**.
+Es lo que hace que el mundo sea uno solo.
+
+La alternativa seria pedir el scope `drive` completo, que si permite carpetas
+compartidas — pero es un scope restringido y obliga a la auditoria de seguridad
+que justamente estamos evitando.
 
 ## Seguridad
 
