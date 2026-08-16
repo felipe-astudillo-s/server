@@ -8,6 +8,11 @@ backup.properties
 backup-*.zip
 *.log
 
+# Carpetas de mundo, por si el repo se descomprime dentro de un server
+world/
+world_nether/
+world_the_end/
+
 # Salida de compilacion
 build/
 *.jar

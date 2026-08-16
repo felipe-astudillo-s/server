@@ -25,7 +25,9 @@ public class Backup {
 
     static final Path CONFIG = Path.of("backup.properties");
     static final String PREFIJO = "backup-";
-    static final DateTimeFormatter FECHA = DateTimeFormatter.ofPattern("yyyy-MM-dd-HHmm");
+    // Con segundos: sin ellos, dos backups en el mismo minuto quedan con el
+    // mismo nombre y despues no hay forma de distinguirlos al restaurar.
+    static final DateTimeFormatter FECHA = DateTimeFormatter.ofPattern("yyyy-MM-dd-HHmmss");
 
     // Lo bloquea el proceso del server en Windows y no aporta nada al backup.
     static final String ARCHIVO_IGNORADO = "session.lock";
@@ -139,7 +141,9 @@ public class Backup {
 
         int sobran = propios.size() - conservar;
         if (sobran <= 0) {
-            System.out.printf("Hay %d backups guardados (se conservan %d).%n", propios.size(), conservar);
+            System.out.printf("Hay %d backup%s guardado%s (se conservan %d).%n",
+                              propios.size(), propios.size() == 1 ? "" : "s",
+                              propios.size() == 1 ? "" : "s", conservar);
             return;
         }
 
