@@ -65,6 +65,9 @@ public class Instalar {
 
         System.out.println("\n--- Paso 4 de 5: configuracion del server ---");
         String passwordRcon = configurarServidor(destino);
+        if (!passwordRcon.isEmpty()) {
+            protegerRcon(destino);
+        }
 
         System.out.println("\n--- Paso 5 de 5: conectar Google Drive ---");
         System.out.println("""
@@ -225,6 +228,93 @@ public class Instalar {
 
         System.out.println("  server.properties creado, con RCON activado.");
         return password;
+    }
+
+    // -----------------------------------------------------------------------
+    // Firewall
+    // -----------------------------------------------------------------------
+
+    static final String REGLA_FIREWALL_RCON = "mcbackup - bloquear RCON externo";
+
+    /**
+     * Bloquea en el firewall de Windows las conexiones a RCON que no vengan de
+     * la propia computadora.
+     *
+     * RCON escucha en todas las interfaces de red (no solo localhost), asi que
+     * sin esto cualquier otra maquina en la misma red podria intentar hablarle.
+     * No afecta a mcbackup ni al juego: mcbackup se conecta por 127.0.0.1 (el
+     * firewall de Windows no filtra el trafico loopback) y los jugadores entran
+     * por el puerto 25565, que esta regla no toca.
+     *
+     * Si no se puede (hace falta ser administrador), el server funciona
+     * exactamente igual: solo queda un poco menos protegido, y se avisa como
+     * cerrarlo a mano.
+     */
+    static void protegerRcon(Path destino) {
+        if (!esWindows()) return;   // en Linux/mac esto se resuelve con iptables/pf, fuera de alcance aca
+
+        String puerto = valorDePropiedad(leerSiExiste(destino.resolve("server.properties")), "rcon.port");
+        if (puerto.isEmpty()) puerto = "25575";
+
+        System.out.println("\nProtegiendo RCON (puerto " + puerto + ") de conexiones externas...");
+
+        try {
+            if (reglaFirewallYaExiste()) {
+                System.out.println("  ya estaba protegido.");
+                return;
+            }
+
+            int codigo = new ProcessBuilder(
+                "netsh", "advfirewall", "firewall", "add", "rule",
+                "name=" + REGLA_FIREWALL_RCON,
+                "dir=in", "action=block", "protocol=TCP", "localport=" + puerto)
+                .redirectErrorStream(true)
+                .start()
+                .waitFor();
+
+            if (codigo == 0) {
+                System.out.println("  listo: ya no se puede alcanzar RCON desde otra computadora.");
+            } else {
+                avisarFirewallManual(puerto);
+            }
+        } catch (Exception e) {
+            avisarFirewallManual(puerto);
+        }
+    }
+
+    static boolean reglaFirewallYaExiste() throws Exception {
+        Process p = new ProcessBuilder(
+            "netsh", "advfirewall", "firewall", "show", "rule", "name=" + REGLA_FIREWALL_RCON)
+            .redirectErrorStream(true)
+            .start();
+        String salida = new String(p.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        p.waitFor();
+        return salida.contains(REGLA_FIREWALL_RCON);
+    }
+
+    static void avisarFirewallManual(String puerto) {
+        System.out.println("""
+              No se pudo agregar la regla (hace falta ser administrador).
+              El server arranca igual, sin ningun problema: esto solo hace que
+              RCON quede alcanzable desde otras computadoras de tu red, ademas
+              de la tuya. Para cerrarlo, abre PowerShell como administrador
+              (clic derecho en el boton de inicio -> "Terminal (Admin)") y
+              pega esto una sola vez:
+            """);
+        System.out.printf("  netsh advfirewall firewall add rule name=\"%s\" dir=in action=block protocol=TCP localport=%s%n%n",
+            REGLA_FIREWALL_RCON, puerto);
+    }
+
+    static boolean esWindows() {
+        return System.getProperty("os.name", "").toLowerCase().contains("win");
+    }
+
+    static String leerSiExiste(Path archivo) {
+        try {
+            return Files.exists(archivo) ? Files.readString(archivo) : "";
+        } catch (IOException e) {
+            return "";
+        }
     }
 
     static void escribirBackupProperties(Path destino, String passwordRcon) throws Exception {
