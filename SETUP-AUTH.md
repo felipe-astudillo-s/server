@@ -1,0 +1,98 @@
+# Autenticacion con Google Drive
+
+## Para el que hostea
+
+```bash
+java -jar authsetup.jar
+```
+
+Se abre el navegador, click en "Permitir", listo. El token queda guardado y se
+renueva solo. No hay que crear nada en ninguna consola de Google.
+
+Si el server es un VPS sin navegador:
+
+```bash
+java -jar authsetup.jar --manual
+```
+
+Te da un link para abrir desde el celular o cualquier otra compu.
+
+---
+
+## Para el dueno del proyecto (una sola vez)
+
+Esto se hace **una vez**, no por cada hoster. Despues queda commiteado en
+`AuthSetup.java` y nadie mas lo toca.
+
+### 1. Crear el proyecto y habilitar la API
+
+1. Entrar a [console.cloud.google.com](https://console.cloud.google.com) y crear un proyecto.
+2. **APIs y servicios -> Biblioteca** -> buscar "Google Drive API" -> **Habilitar**.
+
+### 2. Configurar la pantalla de consentimiento
+
+3. Ir a la pantalla de consentimiento de OAuth (segun la version de la consola
+   puede aparecer como "Google Auth Platform" o "Pantalla de consentimiento").
+4. Tipo de usuario: **Externo**. Completar nombre de la app y email de soporte.
+5. En **Permisos / Scopes**, agregar unicamente:
+
+   ```
+   https://www.googleapis.com/auth/drive.file
+   ```
+
+### 3. Publicar la app  <- el paso que mas se olvida
+
+6. En estado de publicacion, pasar de **Prueba (Testing)** a **Produccion**.
+
+**Por que importa:** mientras la app este en modo Prueba, Google hace que los
+refresh tokens **expiren a los 7 dias**. Un backup automatico andaria una
+semana y despues fallaria para todos los hosters al mismo tiempo, sin razon
+aparente. Ademas el modo Prueba tiene un tope de 100 usuarios.
+
+### 4. Crear las credenciales
+
+7. **Credenciales -> Crear credenciales -> ID de cliente de OAuth**.
+8. Tipo de aplicacion: **App de escritorio** (importante: es lo que permite el
+   redirect a `127.0.0.1` en cualquier puerto, que es lo que usa el script).
+9. Copiar el **Client ID** y el **Client secret** y pegarlos en `AuthSetup.java`,
+   en el bloque `"google"`.
+
+### 5. Compilar y publicar
+
+```bash
+git tag v1.0.0 && git push --tags
+```
+
+El workflow compila el `.jar` y lo sube a Releases. Los hosters lo descargan de
+ahi, sin autenticacion de por medio.
+
+---
+
+## Por que `drive.file` y no `drive`
+
+`drive.file` da acceso **solo a los archivos que crea la propia app**. Alcanza
+de sobra para subir backups, y es un scope **no sensible**: no dispara el
+proceso de verificacion de Google.
+
+El scope `drive` completo, en cambio, es *restringido*: obliga a pasar una
+auditoria de seguridad con un tercero, que es cara y lenta. No hay ningun
+motivo para pedirlo si lo unico que haces es subir tus propios backups.
+
+## Sobre el client ID compartido
+
+Todos los hosters usan el mismo client ID, y eso esta bien: en apps de
+escritorio el client ID no es una credencial secreta, y por eso el flujo usa
+PKCE. Es exactamente lo que hacen rclone, gcloud y el `gh` CLI.
+
+Dos consecuencias a tener en cuenta:
+
+- **La cuota de la API es del proyecto, compartida entre todos.** Para backups
+  (unas pocas subidas por dia y por hoster) sobra muy holgadamente.
+- Cada hoster autoriza **su propia cuenta** de Google: los backups van al Drive
+  de cada uno. El client ID compartido no da acceso cruzado entre hosters.
+
+## Seguridad
+
+El archivo `.auth_tokens.json` que genera el script tiene el refresh token del
+hoster. Ya esta en `.gitignore` y el script le pone permisos `600` en Linux.
+Nunca debe subirse a ningun repo.

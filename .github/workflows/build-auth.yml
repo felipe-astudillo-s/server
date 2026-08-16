@@ -1,0 +1,51 @@
+name: Build AuthSetup
+
+# Compila el .jar y lo publica en Releases.
+# El hoster despues solo descarga y corre `java -jar authsetup.jar`:
+# no necesita JDK, ni Python, ni instalar nada.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:   # para poder correrlo a mano desde la web
+
+permissions:
+  contents: write      # necesario para crear el Release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Compilar
+        # --release 17 = el .jar corre en cualquier JRE 17 o superior.
+        # Minecraft 1.20+ ya pide Java 17, asi que todo hoster lo cumple.
+        run: |
+          mkdir -p build
+          javac --release 17 -d build AuthSetup.java
+
+      - name: Empaquetar el jar
+        run: jar --create --file authsetup.jar --main-class AuthSetup -C build .
+
+      - name: Verificar que arranca
+        run: java -jar authsetup.jar --help
+
+      - name: Publicar en Releases
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: authsetup.jar
+
+      - name: Guardar como artifact
+        if: "!startsWith(github.ref, 'refs/tags/')"
+        uses: actions/upload-artifact@v4
+        with:
+          name: authsetup-jar
+          path: authsetup.jar

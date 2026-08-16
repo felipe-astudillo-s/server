@@ -1,0 +1,7 @@
+# Credenciales del hoster: NUNCA al repo.
+.auth_tokens.json
+
+# Salida de compilacion
+build/
+*.jar
+*.class
