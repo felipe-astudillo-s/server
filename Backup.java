@@ -1,5 +1,7 @@
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.ConnectException;
+import java.net.SocketTimeoutException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -81,9 +83,22 @@ public class Backup {
             return;
         }
 
-        try (Rcon rcon = new Rcon(cfg.getProperty("rcon.host", "127.0.0.1"),
-                                  Integer.parseInt(cfg.getProperty("rcon.port", "25575").trim()),
-                                  cfg.getProperty("rcon.password", ""))) {
+        Rcon rcon;
+        try {
+            rcon = new Rcon(cfg.getProperty("rcon.host", "127.0.0.1"),
+                            Integer.parseInt(cfg.getProperty("rcon.port", "25575").trim()),
+                            cfg.getProperty("rcon.password", ""));
+        } catch (ConnectException | SocketTimeoutException apagado) {
+            // No llegamos al server. Lo mas probable es que este apagado, y con
+            // el server apagado nadie escribe el mundo: copiar es seguro.
+            // Una contrasena mal puesta no cae aca: esa si corta el backup.
+            System.out.println("El server no responde por RCON, parece estar apagado.");
+            System.out.println("Se comprime igual: apagado, el mundo no se esta escribiendo.");
+            comprimir(mundos, zip);
+            return;
+        }
+
+        try (rcon) {
             try {
                 System.out.println("Pausando el guardado del server...");
                 rcon.comando("save-off");
