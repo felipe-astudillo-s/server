@@ -45,8 +45,36 @@ public class Mundo {
             apartarMundoLocal(servidor, cfg);
             System.out.println("Instalando el mundo...");
             descomprimir(zip, servidor);
+            anotarOrigen(servidor, ultimo[0], ultimo[1]);
         } finally {
             Files.deleteIfExists(zip);
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // De que backup desciende el mundo local
+    // -----------------------------------------------------------------------
+
+    static final String MARCA = ".mundo-origen";
+
+    /**
+     * Deja anotado de que backup salio el mundo que esta en disco.
+     *
+     * Sirve para no subir un mundo viejo encima del de otro: si en Drive hay uno
+     * mas nuevo que el que bajamos, es que alguien jugo despues y nuestra copia
+     * ya no sirve como base.
+     */
+    static void anotarOrigen(Path servidor, String id, String nombre) throws IOException {
+        Files.writeString(servidor.resolve(MARCA),
+            "{\"id\":\"%s\",\"nombre\":\"%s\"}".formatted(id, nombre));
+    }
+
+    /** Id del backup del que desciende el mundo local, o null si no se sabe. */
+    static String origenLocal(Path servidor) {
+        try {
+            return Drive.campo(Files.readString(servidor.resolve(MARCA)), "id");
+        } catch (IOException sinMarca) {
+            return null;
         }
     }
 

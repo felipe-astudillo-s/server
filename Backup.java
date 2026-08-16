@@ -35,11 +35,49 @@ public class Backup {
     static final String ARCHIVO_IGNORADO = "session.lock";
 
     public static void main(String[] args) throws Exception {
-        hacer(cargarConfig());
+        hacer(cargarConfig(), List.of(args).contains("--forzar"));
     }
 
     /** El backup en si. Lo reutiliza 'host' para subir el mundo al cerrar. */
     public static void hacer(Properties cfg) throws Exception {
+        hacer(cfg, false);
+    }
+
+    /**
+     * Verifica que el mundo local siga siendo el mas nuevo antes de subirlo.
+     *
+     * En el modelo rotativo, tu copia queda vieja apenas otro jugador hostea.
+     * Subirla la convertiria en el ultimo backup y el proximo que juegue
+     * arrancaria desde ahi, perdiendo la partida del que jugo en el medio.
+     */
+    static void exigirMundoAlDia(String token, String carpetaId, Path servidor) throws Exception {
+        List<String[]> backups = Drive.listar(token, carpetaId).stream()
+            .filter(a -> a[1].startsWith(PREFIJO) && a[1].endsWith(".zip"))
+            .toList();
+
+        if (backups.isEmpty()) return;   // primer backup del mundo: nada que pisar
+
+        String masNuevo = backups.get(backups.size() - 1)[0];
+        String origen = Mundo.origenLocal(servidor);
+
+        if (masNuevo.equals(origen)) return;   // nuestro mundo desciende del ultimo
+
+        AuthSetup.exit("""
+
+            El mundo local NO esta al dia: en Drive hay uno mas nuevo (%s).
+
+            Si subis este, el proximo que juegue va a arrancar desde tu copia
+            vieja y se pierde lo que jugo el ultimo. Para jugar con el mundo
+            actualizado:
+                java -jar mcbackup.jar host
+
+            Si de verdad queres subir esta copia igual, sabiendo que pisa a la
+            otra:
+                java -jar mcbackup.jar backup --forzar
+            """.formatted(backups.get(backups.size() - 1)[1]));
+    }
+
+    public static void hacer(Properties cfg, boolean forzar) throws Exception {
         Instant arranque = Instant.now();
 
         Path servidor = Path.of(cfg.getProperty("server.dir", "."));
@@ -52,6 +90,11 @@ public class Backup {
 
         System.out.println("Autenticando con Google Drive...");
         String token = AuthSetup.getAccessToken();
+        String carpeta = Drive.buscarOCrearCarpeta(token, cfg.getProperty("drive.folder", "Minecraft Backups"));
+
+        // Antes de comprimir nada: si alguien jugo despues que nosotros, subir
+        // nuestra copia la pondria como la mas nueva y borraria su partida.
+        if (!forzar) exigirMundoAlDia(token, carpeta, servidor);
 
         Path zip = Path.of(cfg.getProperty("temp.dir", "."))
                        .resolve(PREFIJO + LocalDateTime.now().format(FECHA) + ".zip");
@@ -60,8 +103,8 @@ public class Backup {
 
         try {
             System.out.printf("Subiendo %s (%s)...%n", zip.getFileName(), tamano(Files.size(zip)));
-            String carpeta = Drive.buscarOCrearCarpeta(token, cfg.getProperty("drive.folder", "Minecraft Backups"));
-            Drive.subir(token, zip, carpeta);
+            String nuevoId = Drive.subir(token, zip, carpeta);
+            Mundo.anotarOrigen(servidor, nuevoId, zip.getFileName().toString());
 
             aplicarRetencion(token, carpeta, Integer.parseInt(cfg.getProperty("retention", "7").trim()));
         } finally {

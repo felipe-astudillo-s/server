@@ -6,6 +6,7 @@ backup.properties
 
 # Zips temporales y logs
 backup-*.zip
+.mundo-origen
 *.log
 
 # Carpetas de mundo, por si el repo se descomprime dentro de un server
