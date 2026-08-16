@@ -180,7 +180,18 @@ En `backup.properties`:
 
 ## Que entren tus amigos
 
-Necesitan tu IP pública y que tu router redirija el puerto **25565**.
+Abre el programa de **playit** antes o durante la partida, y pasa tu dirección
+(`algo.gl.at.ply.gg`) por el chat del grupo. Es siempre la misma, así que
+alcanza con compartirla una vez.
 
-**Nunca redirijas el 25575.** Ese es RCON, y da acceso completo a la consola del
-server a cualquiera que adivine la contraseña.
+Si playit está cerrado, el server funciona igual pero nadie puede conectarse
+desde afuera. Es la causa más común de "a mí no me entra".
+
+Cuando hospede otra persona, se conectan a **su** dirección, no a la tuya. Cada
+uno tiene la propia.
+
+> Si prefieres no usar playit, la alternativa es pasar tu IP pública y redirigir
+> el puerto **25565** en tu router. En ese caso, **nunca redirijas el 25575**:
+> ese es RCON y da acceso completo a la consola del server.
+
+La configuración inicial de playit está en el [README](README.md).

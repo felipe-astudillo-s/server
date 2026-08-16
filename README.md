@@ -18,6 +18,34 @@ siempre desde donde quedó el anterior.
 
 Nada más: ni Python, ni rclone, ni crear nada en consolas de Google.
 
+## Antes de empezar: playit, para que entren tus amigos
+
+Para que otros se conecten a tu server hace falta que tu computadora sea
+alcanzable desde internet. La forma más simple es **playit.gg**, un servicio
+gratuito que arma un túnel y te da una dirección fija, sin tocar el router.
+
+1. Entra a [playit.gg](https://playit.gg) y crea una cuenta.
+2. Descarga el programa para Windows e instálalo.
+3. Al abrirlo, te va a pedir vincularlo con tu cuenta desde el navegador. Acepta.
+4. En el panel de playit, crea un túnel de tipo **Minecraft Java**, apuntando al
+   puerto **25565** de tu computadora.
+5. Te va a dar una dirección parecida a `algo.gl.at.ply.gg`. **Esa es tu
+   dirección de servidor.**
+
+> Los nombres de los botones pueden cambiar con las actualizaciones de la página,
+> pero el orden es siempre ese: cuenta → programa → vincular → túnel al 25565.
+
+**Tu dirección no cambia nunca.** La compartes una sola vez en el Discord del
+grupo y queda. Cada quien tiene la suya: cuando le toque hospedar a otro, los
+demás usan la dirección de esa persona.
+
+**El programa de playit tiene que estar abierto mientras hospedas.** Si el server
+está arriba pero playit cerrado, nadie va a poder entrar.
+
+El puerto 25565 es el que deja configurado el instalador, así que no tienes que
+ajustar nada más. Ni el server de Minecraft ni esta herramienta necesitan saber
+cuál es tu dirección de playit: el túnel funciona por fuera y ellos ni se enteran.
+
 ## Los pasos
 
 ### 1. Descarga el programa
