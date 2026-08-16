@@ -70,7 +70,7 @@ public class Host {
 
                     El server cerro a los %d segundos: no llego a arrancar bien.
                     NO se sube nada, para no pisar el mundo que hay en Drive.
-                    Revisa el error de arriba y volve a intentar.
+                    Revisa el error de arriba y vuelve a intentar.
                     %n""", segundos);
                 return;
             }
@@ -101,8 +101,8 @@ public class Host {
 
                     Ya hay un server usando el mundo '%s'.
 
-                    Cerra esa ventana escribiendo 'stop' en su consola y volve a
-                    intentar. Si no encontras la ventana, busca el proceso java
+                    Cierra esa ventana escribiendo 'stop' en su consola y vuelve a
+                    intentar. Si no encuentras la ventana, busca el proceso java
                     en el Administrador de tareas.
                     """.formatted(mundo.getFileName()));
             }
@@ -136,7 +136,7 @@ public class Host {
         comando.add(jar.getFileName().toString());
         comando.add("nogui");
 
-        System.out.println("\nArrancando el server. Para cerrar, escribi 'stop' en la consola.\n");
+        System.out.println("\nArrancando el server. Para cerrar, escribe 'stop' en la consola.\n");
 
         // inheritIO conecta la consola del server con esta terminal: se ve el log
         // y se le pueden escribir comandos como si se hubiera arrancado a mano.

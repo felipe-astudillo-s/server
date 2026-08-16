@@ -30,7 +30,7 @@ jobs:
         # Minecraft 1.20+ ya pide Java 17, asi que todo hoster lo cumple.
         run: |
           mkdir -p build
-          javac --release 17 -Xlint:all -d build *.java
+          javac --release 17 -encoding UTF-8 -Xlint:all -d build *.java
 
       - name: Empaquetar el jar
         run: jar --create --file mcbackup.jar --main-class Main -C build .
@@ -45,7 +45,7 @@ jobs:
         # sin tener que escribir ningun comando.
         run: |
           mkdir -p paquete
-          cp mcbackup.jar instalar.bat jugar.bat instalar.sh jugar.sh README.md JUGAR.md paquete/
+          cp mcbackup.jar instalar.bat jugar.bat instalar-linux.sh jugar-linux.sh README.md JUGAR.md paquete/
           cd paquete && zip -r ../mcbackup.zip .
 
       - name: Publicar en Releases

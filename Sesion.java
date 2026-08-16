@@ -45,7 +45,7 @@ public class Sesion {
                     El mundo lo esta hosteando %s desde %s.
 
                     Espera a que cierre su server. Si estas seguro de que nadie
-                    esta jugando (por ejemplo, se le corto la luz), podes correr:
+                    esta jugando (por ejemplo, se le corto la luz), puedes ejecutar:
                       java -jar mcbackup.jar host --forzar
                     """.formatted(duenio, desde));
             }
@@ -72,7 +72,7 @@ public class Sesion {
             String ganador = despues.stream().map(a -> a[0]).min(Comparator.naturalOrder()).orElseThrow();
             if (!ganador.equals(miId)) {
                 Drive.borrar(token, miId);
-                throw new IOException("\nOtro jugador tomo el mundo en el mismo momento. Proba de nuevo en un rato.\n");
+                throw new IOException("\nOtro jugador tomo el mundo en el mismo momento. Intenta de nuevo en un rato.\n");
             }
         }
 

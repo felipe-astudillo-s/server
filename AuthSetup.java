@@ -83,15 +83,15 @@ public class AuthSetup {
     static final String DONE_PAGE = """
         <!doctype html><meta charset="utf-8"><title>Listo</title>
         <body style="font-family:system-ui;text-align:center;padding-top:15vh">
-        <h2>Autenticacion completada</h2>
-        <p>Ya podes cerrar esta pestana y volver a la terminal.</p>
+        <h2>Autenticación completada</h2>
+        <p>Ya puedes cerrar esta pestaña y volver a la terminal.</p>
         </body>""";
 
     static final String FAIL_PAGE = """
         <!doctype html><meta charset="utf-8"><title>Fallo</title>
         <body style="font-family:system-ui;text-align:center;padding-top:15vh">
-        <h2>No se pudo completar la autenticacion</h2>
-        <p>Volve a la terminal para ver el motivo.</p>
+        <h2>No se pudo completar la autenticación</h2>
+        <p>Vuelve a la terminal para ver el motivo.</p>
         </body>""";
 
     // -----------------------------------------------------------------------
@@ -133,7 +133,7 @@ public class AuthSetup {
         saveTokens(providerName, tokenJson);
 
         System.out.println("\nListo. Credenciales guardadas en " + TOKEN_FILE);
-        System.out.println("No hace falta volver a correr esto: se renueva solo.\n");
+        System.out.println("No hace falta volver a ejecutar esto: se renueva solo.\n");
     }
 
     // -----------------------------------------------------------------------
@@ -152,12 +152,12 @@ public class AuthSetup {
             redirectUri = "http://127.0.0.1:" + MANUAL_PORT;
             String url = buildAuthUrl(cfg, redirectUri, challenge, state);
 
-            System.out.println("\nEste server no tiene navegador. Abri este link en");
+            System.out.println("\nEste server no tiene navegador. Abre este enlace en");
             System.out.println("cualquier otra computadora o en tu celular:\n");
             System.out.println(url);
             System.out.println("\nDespues de autorizar, el navegador va a intentar ir a una");
             System.out.println("direccion 127.0.0.1 y va a mostrar error. Eso es esperado.");
-            System.out.println("Copia la URL COMPLETA de la barra de direcciones y pegala aca.\n");
+            System.out.println("Copia la URL COMPLETA de la barra de direcciones y pegala aqui.\n");
             System.out.print("URL: ");
 
             var reader = new BufferedReader(new InputStreamReader(System.in));
@@ -202,7 +202,7 @@ public class AuthSetup {
             try {
                 query = received.get(TIMEOUT_SECONDS, TimeUnit.SECONDS);
             } catch (Exception e) {
-                exit("No llego la respuesta a tiempo. Proba de nuevo, o usa --manual.");
+                exit("No llego la respuesta a tiempo. Intenta de nuevo, o usa --manual.");
                 return null;
             } finally {
                 server.stop(1);
@@ -245,13 +245,13 @@ public class AuthSetup {
     /** Lo que usa el resto del proyecto. Refresca solo si hace falta. */
     public static String getAccessToken() throws Exception {
         if (!Files.exists(TOKEN_FILE)) {
-            exit("No hay credenciales. Corre primero: java -jar mcbackup.jar auth");
+            exit("No hay credenciales. Ejecuta primero: java -jar mcbackup.jar auth");
         }
         String saved = Files.readString(TOKEN_FILE);
         Provider cfg = PROVIDERS.get(jsonField(saved, "provider"));
         String refreshToken = jsonField(saved, "refresh_token");
         if (refreshToken == null) {
-            exit("No se guardo refresh_token. Volve a correr: java -jar mcbackup.jar auth");
+            exit("No se guardo refresh_token. Vuelve a ejecutar: java -jar mcbackup.jar auth");
         }
 
         var form = new LinkedHashMap<String, String>();

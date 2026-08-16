@@ -71,7 +71,7 @@ public class Backup {
             actualizado:
                 java -jar mcbackup.jar host
 
-            Si de verdad queres subir esta copia igual, sabiendo que pisa a la
+            Si de verdad quieres subir esta copia igual, sabiendo que pisa a la
             otra:
                 java -jar mcbackup.jar backup --forzar
             """.formatted(backups.get(backups.size() - 1)[1]));
@@ -265,7 +265,7 @@ public class Backup {
                 """);
 
             AuthSetup.exit("\nCree " + CONFIG + " con valores por defecto."
-                         + "\nRevisalo y volve a correr el backup.\n");
+                         + "\nRevisalo y vuelve a ejecutar el backup.\n");
         }
 
         var props = new Properties();

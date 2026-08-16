@@ -74,7 +74,7 @@ public class Instalar {
             con la tuya personal. Todos los que hostean usan la misma cuenta:
             asi cada uno ve el mundo que subio el anterior.
             """);
-        esperarEnter("Cuando estes listo, apreta Enter...");
+        esperarEnter("Cuando estes listo, presiona Enter...");
 
         AuthSetup.main(new String[0]);
 
@@ -87,7 +87,7 @@ public class Instalar {
 
                   java -jar mcbackup.jar host
 
-              (o hace doble click en jugar.bat)
+              (o haz doble clic en jugar.bat)
             ============================================
             """);
     }
@@ -164,11 +164,11 @@ public class Instalar {
         }
 
         System.out.println("""
-            Para correr un server hay que aceptar el EULA de Minecraft:
+            Para ejecutar un server hay que aceptar el EULA de Minecraft:
             https://aka.ms/MinecraftEULA
             """);
 
-        String respuesta = esperarEnter("Escribi 'acepto' para continuar: ").trim().toLowerCase();
+        String respuesta = esperarEnter("Escribe 'acepto' para continuar: ").trim().toLowerCase();
         if (!respuesta.equals("acepto")) {
             AuthSetup.exit("No se acepto el EULA. La instalacion queda a medias.");
         }
@@ -189,10 +189,10 @@ public class Instalar {
                 System.out.println("""
                       Ya existe un server.properties, no lo toco.
                       Pero le falta RCON, que es lo que permite hacer backups sin
-                      corromper el mundo. Agregale estas lineas y reinicia el server:
+                      corromper el mundo. Agrega estas lineas y reinicia el server:
                         enable-rcon=true
                         rcon.port=25575
-                        rcon.password=elegi-una""");
+                        rcon.password=elige-una""");
                 return password;
             }
             System.out.println("  server.properties ya estaba configurado, con RCON activo.");

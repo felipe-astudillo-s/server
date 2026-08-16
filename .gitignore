@@ -17,4 +17,5 @@ world_the_end/
 # Salida de compilacion
 build/
 *.jar
+*.zip
 *.class

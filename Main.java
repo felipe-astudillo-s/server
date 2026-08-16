@@ -22,7 +22,7 @@ public class Main {
           java -jar mcbackup.jar list      muestra los backups que hay en Drive
 
         La configuracion vive en backup.properties, que se crea solo la primera
-        vez que corres cualquiera de estos comandos.""";
+        vez que ejecutas cualquiera de estos comandos.""";
 
     public static void main(String[] args) throws Exception {
         String comando = args.length > 0 ? args[0] : "";
@@ -85,7 +85,7 @@ public class Main {
 
         String duenio = Sesion.duenioActual(token, carpeta);
         System.out.println(duenio == null
-            ? "El mundo esta libre: podes hostear cuando quieras."
+            ? "El mundo esta libre: puedes hostear cuando quieras."
             : "Lo esta hosteando " + duenio);
     }
 
