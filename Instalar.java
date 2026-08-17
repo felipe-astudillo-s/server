@@ -350,6 +350,11 @@ public class Instalar {
             retention=7
             temp.dir=.
 
+            # Tu direccion de playit, la que te da el panel al crear el tunel.
+            # Ponla aca y se publica sola cada vez que hosteas: los demas entran
+            # con 'mcbackup conectar' sin que les tengas que avisar nada.
+            playit.hostname=
+
             rcon.enabled=true
             rcon.host=127.0.0.1
             rcon.port=25575
