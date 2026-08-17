@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -228,22 +229,16 @@ public class Puente {
     // -----------------------------------------------------------------------
 
     static void abrirPuente() throws Exception {
-        // Solo loopback, nunca 0.0.0.0: si escuchara en toda la red, cualquiera
-        // en tu wifi podria entrar al server a traves de tu maquina.
-        InetAddress loopback = InetAddress.getLoopbackAddress();
-        ServerSocket listener = null;
+        List<ServerSocket> oidos = List.of();
         int puertoLocal = 0;
 
-        for (int i = 0; i < PUERTOS_A_PROBAR && listener == null; i++) {
-            try {
-                puertoLocal = PUERTO_PREFERIDO + i;
-                listener = new ServerSocket(puertoLocal, 50, loopback);
-            } catch (IOException ocupado) {
-                listener = null;
-            }
+        for (int i = 0; i < PUERTOS_A_PROBAR; i++) {
+            puertoLocal = PUERTO_PREFERIDO + i;
+            oidos = escucharEn(puertoLocal);
+            if (!oidos.isEmpty()) break;
         }
 
-        if (listener == null) {
+        if (oidos.isEmpty()) {
             AuthSetup.exit("\nNo hay ningun puerto libre entre " + PUERTO_PREFERIDO
                          + " y " + (PUERTO_PREFERIDO + PUERTOS_A_PROBAR - 1) + ".\n");
             return;
@@ -272,13 +267,81 @@ public class Puente {
 
         System.out.println("Esperando a que abras Minecraft...\n");
 
-        try (ServerSocket servidor = listener) {
+        // Todos menos el primero en hilos aparte; el primero se queda con el
+        // hilo principal, para que la JVM no se apague al terminar main().
+        for (int i = 1; i < oidos.size(); i++) {
+            ServerSocket extra = oidos.get(i);
+            Thread hilo = new Thread(() -> aceptar(extra));
+            hilo.setDaemon(true);
+            hilo.start();
+        }
+        aceptar(oidos.get(0));
+    }
+
+    /**
+     * Abre un socket en cada punta del loopback, las dos en el mismo puerto.
+     *
+     * Hacen falta las dos. 'localhost' resuelve a 127.0.0.1 y a ::1, y cual de
+     * las dos elige el juego depende de si le pusieron los argumentos de IPv6
+     * al launcher: con preferIPv6Addresses=true agarra ::1 primero. Escuchando
+     * en una sola, al jugador que tenga la otra le da conexion rechazada.
+     *
+     * Nunca 0.0.0.0: si escuchara en toda la red, cualquiera en tu wifi podria
+     * entrar al server a traves de tu maquina.
+     *
+     * Si alguna de las dos esta ocupada se sueltan las dos y se prueba el
+     * puerto siguiente: quedar escuchando a medias es justo el bug que esto
+     * viene a evitar.
+     */
+    static List<ServerSocket> escucharEn(int puerto) {
+        List<ServerSocket> abiertos = new ArrayList<>();
+
+        for (String loopback : loopbacksDisponibles()) {
+            try {
+                abiertos.add(new ServerSocket(puerto, 50, InetAddress.getByName(loopback)));
+            } catch (IOException ocupado) {
+                for (ServerSocket abierto : abiertos) cerrar(abierto);
+                return List.of();
+            }
+        }
+        return abiertos;
+    }
+
+    /**
+     * Las puntas del loopback que este equipo soporta. Un equipo con IPv6
+     * apagado no puede abrir ::1, y no es un error: se usa solo IPv4.
+     */
+    static List<String> loopbacksDisponibles() {
+        List<String> disponibles = new ArrayList<>();
+        disponibles.add("127.0.0.1");
+
+        // Se prueba con un puerto efimero para no pisar el que vamos a usar.
+        try (ServerSocket prueba = new ServerSocket(0, 1, InetAddress.getByName("::1"))) {
+            if (prueba.isBound()) disponibles.add("::1");
+        } catch (IOException sinIPv6) {
+            // El equipo no tiene IPv6: con 127.0.0.1 alcanza.
+        }
+        return disponibles;
+    }
+
+    static void aceptar(ServerSocket oido) {
+        try (ServerSocket servidor = oido) {
             while (true) {
                 Socket juego = servidor.accept();
                 Thread hilo = new Thread(() -> atender(juego));
                 hilo.setDaemon(true);
                 hilo.start();
             }
+        } catch (IOException seCerro) {
+            // El puente se esta cerrando.
+        }
+    }
+
+    static void cerrar(ServerSocket socket) {
+        try {
+            socket.close();
+        } catch (IOException yaEstaba) {
+            // Cerrar dos veces no es un problema.
         }
     }
 
