@@ -17,6 +17,8 @@ public class Main {
           java -jar mcbackup.jar auth      conecta la cuenta del mundo (una sola vez)
           java -jar mcbackup.jar host      JUGAR: baja el mundo, abre el server, lo sube al cerrar
           java -jar mcbackup.jar estado    muestra si alguien esta hosteando ahora
+          java -jar mcbackup.jar conectar  ENTRAR A JUGAR: elige la mejor ruta y abre localhost
+          java -jar mcbackup.jar red       mide tu conexion al server y te dice que hacer
           java -jar mcbackup.jar detener   apaga un server que quedo colgado sin ventana
           java -jar mcbackup.jar backup    sube un backup sin abrir el server
           java -jar mcbackup.jar list      muestra los backups que hay en Drive
@@ -33,6 +35,8 @@ public class Main {
             case "auth" -> AuthSetup.main(resto);
             case "host", "jugar" -> Host.main(resto);
             case "estado" -> estado();
+            case "conectar" -> Puente.main(resto);
+            case "red", "ping" -> Red.main(resto);
             case "detener", "stop" -> detener();
             case "backup" -> Backup.main(resto);
             case "list" -> listar();

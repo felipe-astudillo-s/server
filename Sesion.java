@@ -25,11 +25,13 @@ public class Sesion {
     /**
      * Toma el candado. Devuelve el id del archivo para poder soltarlo despues.
      *
-     * @param forzar rompe un candado ajeno. Solo para cuando quedo colgado y
-     *               se confirmo que nadie esta jugando.
+     * @param direccion la direccion de playit del anfitrion, para que los demas
+     *                  la encuentren solos. Puede ir vacia: es opcional.
+     * @param forzar    rompe un candado ajeno. Solo para cuando quedo colgado y
+     *                  se confirmo que nadie esta jugando.
      */
-    public static String tomar(String token, String carpetaId, String jugador, boolean forzar)
-            throws Exception {
+    public static String tomar(String token, String carpetaId, String jugador,
+                               String direccion, boolean forzar) throws Exception {
 
         List<String[]> existentes = buscarCandados(token, carpetaId);
 
@@ -58,8 +60,9 @@ public class Sesion {
         }
 
         String contenido = """
-            {"jugador":"%s","desdeUtc":"%s"}"""
-            .formatted(Drive.escapar(jugador), Instant.now().toString());
+            {"jugador":"%s","desdeUtc":"%s","direccion":"%s"}"""
+            .formatted(Drive.escapar(jugador), Instant.now().toString(),
+                       Drive.escapar(direccion == null ? "" : direccion.trim()));
 
         String miId = Drive.subirTexto(token, ARCHIVO, contenido, carpetaId);
 
@@ -98,6 +101,21 @@ public class Sesion {
 
         String contenido = Drive.descargarTexto(token, candados.get(0)[0]);
         return valor(contenido, "jugador") + " desde " + valor(contenido, "desdeUtc");
+    }
+
+    /**
+     * La direccion de playit de quien esta hosteando, o null si no hay nadie o
+     * si el anfitrion no la publico.
+     *
+     * Es lo que le permite a 'mcbackup conectar' apuntar solo, sin que nadie
+     * tenga que repartir la direccion cada vez que cambia el anfitrion.
+     */
+    public static String direccionActual(String token, String carpetaId) throws Exception {
+        List<String[]> candados = buscarCandados(token, carpetaId);
+        if (candados.isEmpty()) return null;
+
+        String direccion = Drive.campo(Drive.descargarTexto(token, candados.get(0)[0]), "direccion");
+        return direccion == null || direccion.isBlank() ? null : direccion.trim();
     }
 
     private static List<String[]> buscarCandados(String token, String carpetaId) throws Exception {

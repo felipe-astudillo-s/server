@@ -211,7 +211,14 @@ public class Instalar {
             online-mode=true
             difficulty=normal
             view-distance=10
+            simulation-distance=10
             server-port=25565
+
+            # Cuantos bytes tiene que pesar un paquete para que el server lo
+            # comprima. 256 es el valor de siempre y esta bien: bajarlo a 64
+            # ahorra algo de ancho de banda a costa de CPU. Sirve poco y nada
+            # si el problema es de ruteo (ahi mide con: mcbackup red).
+            network-compression-threshold=256
 
             # Lista de jugadores permitidos. Empieza apagada para que puedas
             # entrar; para activarla, en la consola del server: whitelist on

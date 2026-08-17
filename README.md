@@ -35,9 +35,50 @@ gratuito que arma un túnel y te da una dirección fija, sin tocar el router.
 > Los nombres de los botones pueden cambiar con las actualizaciones de la página,
 > pero el orden es siempre ese: cuenta → programa → vincular → túnel al 25565.
 
-**Tu dirección no cambia nunca.** La compartes una sola vez en el Discord del
-grupo y queda. Cada quien tiene la suya: cuando le toque hospedar a otro, los
-demás usan la dirección de esa persona.
+### Antes de repartir la dirección, compruébala
+
+No todos los túneles de playit son iguales de rápidos, y no es cuestión de
+suerte del momento: a cada túnel le toca un rango de IPs, y algunos proveedores
+chilenos mandan ciertos rangos por **Estados Unidos** en vez de dejarlos dentro
+de Chile. El mismo túnel puede darte 14 ms o 200 ms según qué rango le tocó.
+
+Una vez que tengas la dirección, mídela:
+
+```bash
+java -jar mcbackup.jar red algo.gl.at.ply.gg
+```
+
+Te dice si el túnel quedó bien o si conviene borrarlo y crear uno nuevo (es
+gratis, y sale con otra dirección en otro rango). Hazlo **antes** de pasarle la
+dirección al grupo: es mucho más fácil que descubrirlo después, con todos
+adentro quejándose del lag.
+
+Después, **pon tu dirección en `backup.properties`**:
+
+```
+playit.hostname=algo.gl.at.ply.gg
+```
+
+No es cosmético: con eso, cada vez que hospedes, tu dirección se publica sola
+junto con el candado del mundo. Los demás corren `java -jar mcbackup.jar
+conectar` sin argumentos y su juego apunta solo a quien esté hospedando, sin que
+nadie tenga que repartir nada por el chat. Si lo dejas vacío, el server funciona
+igual, pero los demás van a tener que escribir tu dirección a mano.
+
+> **Si el diagnóstico te dice que tu buena vía es IPv6**, tu agente de playit
+> también debería salir por ahí, o la penalización te la comen todos los que se
+> conecten a ti. Se fija agregando esta línea a `playit.toml` (necesita el
+> agente 0.8.1-beta o superior):
+>
+> ```toml
+> control_address = '[2602:fbaf::1]:5523'
+> ```
+>
+> Si `red` te dice que tu buena vía es IPv4, **no toques esto**.
+
+**Tu dirección no cambia nunca.** Cada quien tiene la suya: cuando le toque
+hospedar a otro, los demás usan la dirección de esa persona — o directamente
+`mcbackup conectar`, que la averigua solo.
 
 **El programa de playit tiene que estar abierto mientras hospedas.** Si el server
 está arriba pero playit cerrado, nadie va a poder entrar.

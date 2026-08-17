@@ -260,6 +260,11 @@ public class Backup {
                 # Donde dejar el zip temporal mientras se sube.
                 temp.dir=.
 
+                # Tu direccion de playit, la que le pasas a los demas.
+                # Solo la usa 'mcbackup red' para no tener que escribirla cada
+                # vez que midas la conexion. El server no la necesita.
+                playit.hostname=
+
                 # --- RCON -------------------------------------------------------
                 # Muy recomendado. Sin esto el mundo se copia mientras el server
                 # escribe, y el backup puede salir corrupto.

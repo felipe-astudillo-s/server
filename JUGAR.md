@@ -177,21 +177,107 @@ En `backup.properties`:
 | `player.name` | Tu nombre, para que los demás sepan quién tiene el mundo |
 | `server.ram` | Memoria del server. `4G` funciona bien con 8 GB en la máquina |
 | `retention` | Cuántas partidas guardar en Drive |
+| `playit.hostname` | Tu dirección de playit. Se publica sola al hospedar, para que los demás entren con `conectar` sin preguntarte nada |
 
 ## Que entren tus amigos
 
-Abre el programa de **playit** antes o durante la partida, y pasa tu dirección
-(`algo.gl.at.ply.gg`) por el chat del grupo. Es siempre la misma, así que
-alcanza con compartirla una vez.
+Abre el programa de **playit** antes o durante la partida. Si tienes tu
+`playit.hostname` puesto en `backup.properties`, no tienes que avisar nada: tu
+dirección se publica sola al reservar el mundo, y los demás entran corriendo
+`java -jar mcbackup.jar conectar` y conectándose a `localhost`.
+
+Si no lo tienes puesto, pasa tu dirección (`algo.gl.at.ply.gg`) por el chat del
+grupo. Es siempre la misma, así que alcanza con compartirla una vez.
 
 Si playit está cerrado, el server funciona igual pero nadie puede conectarse
 desde afuera. Es la causa más común de "a mí no me entra".
-
-Cuando hospede otra persona, se conectan a **su** dirección, no a la tuya. Cada
-uno tiene la propia.
 
 > Si prefieres no usar playit, la alternativa es pasar tu IP pública y redirigir
 > el puerto **25565** en tu router. En ese caso, **nunca redirijas el 25575**:
 > ese es RCON y da acceso completo a la consola del server.
 
 La configuración inicial de playit está en el [README](README.md).
+
+## Si te va lento o te desconecta
+
+**Usa el puente.** Necesitas `mcbackup.jar` en una carpeta (bájalo de
+[Releases](../../releases); no hace falta instalar nada más, ni el server ni
+Drive). La primera vez, desde una terminal en esa carpeta:
+
+```bash
+java -jar mcbackup.jar conectar
+```
+
+Mide las rutas disponibles hacia quien esté hospedando, elige la mejor, y te
+deja el puente abierto. Después, en Minecraft, te conectas a **`localhost`**.
+
+Esa dirección **no cambia nunca**, ni cuando hospeda otra persona: guárdala en
+tu lista de servidores y olvídate. Deja la ventana abierta mientras juegas.
+
+Si nadie publicó su dirección, pásasela tú:
+
+```bash
+java -jar mcbackup.jar conectar algo.gl.at.ply.gg
+```
+
+### Y de ahí en adelante, doble clic
+
+Al terminar, el comando te deja un **`conectar.bat`** en esa carpeta. Las
+siguientes veces no necesitas terminal: doble clic y a jugar. Si le pasaste una
+dirección, queda guardada dentro; si la sacó de Drive, la vuelve a averiguar
+cada vez, que es lo correcto porque el anfitrión cambia.
+
+> El `.bat` lo genera tu propia computadora en vez de venir en la descarga, por
+> la misma razón que `jugar.bat`: Windows bloquea los scripts bajados de
+> internet. Uno creado localmente no lleva esa marca.
+>
+> Si no tienes Java instalado, el `.bat` usa el que ya trae Minecraft.
+
+**Por qué esto arregla algo.** Tu proveedor decide por dónde sale cada rango de
+IPs. Algunos mandan ciertos rangos de playit por Estados Unidos aunque el
+servidor esté a diez cuadras, y el viaje de ida y vuelta te agrega 180 ms y
+cortes. Medido en una línea VTR de Santiago: el mismo servicio da **18 ms por
+IPv6 y 196 ms por IPv4** en un dominio, y exactamente al revés en otro. No es tu
+wifi ni tu computadora.
+
+Lo importante: **el launcher de Minecraft arranca con
+`java.net.preferIPv4Stack=true`, que apaga IPv6 por completo.** Cuando la vía
+buena es IPv6, el juego no puede usarla ni pegando la IP a mano. El puente corre
+en su propia ventana, sin esa restricción, así que alcanza la ruta que el juego
+no alcanza. El salto extra es por dentro de tu máquina: no se nota.
+
+### Si quieres ver los números
+
+```bash
+java -jar mcbackup.jar red algo.gl.at.ply.gg
+```
+
+Mide lo mismo pero sin abrir el puente, y te nombra el datacenter donde te
+ubica tu proveedor (`Santiago_1`, `Miami_1`, ...). Al final imprime una línea
+para pegar en el chat: si varios la pegan, se ve de inmediato si el problema es
+de un proveedor, del túnel, o de una sola persona.
+
+### Sin puente, a mano
+
+Si prefieres no dejar una ventana abierta y `red` te dice que tu vía buena es
+IPv6, puedes habilitarla en el launcher oficial: **Instalaciones → tu perfil →
+los tres puntos → Editar → Más opciones → Argumentos de JVM**, y agregas al
+final de lo que ya diga:
+
+```
+-Djava.net.preferIPv4Stack=false -Djava.net.preferIPv6Addresses=true
+```
+
+**Hazlo solo si `red` te lo indicó.** A ciegas puede empeorarte la conexión: hay
+direcciones donde IPv6 es justo la vía mala.
+
+### Cuando el arreglo es del anfitrión
+
+Si el diagnóstico dice que el túnel está desviado, no hay nada que puedas hacer
+tú: quien hospeda tiene que borrar el túnel en el panel de playit y crear uno
+nuevo al 25565. Sale con otra dirección, en otro rango. Es gratis e instantáneo,
+y puede hacer falta repetirlo un par de veces.
+
+> **Pagar playit Premium no arregla esto.** Su túnel regional de Sudamérica cae
+> en São Paulo: 60 ms medidos desde Santiago, peor que los 12-14 ms que se
+> consiguen gratis cuando el túnel queda en un rango bueno. No gasten en eso.

@@ -43,7 +43,16 @@ public class Host {
         String carpeta = Drive.buscarOCrearCarpeta(token, cfg.getProperty("drive.folder", "Minecraft Backups"));
         String jugador = cfg.getProperty("player.name", System.getProperty("user.name", "alguien"));
 
-        String candado = Sesion.tomar(token, carpeta, jugador, forzar);
+        // La direccion de playit viaja con el candado para que los demas la
+        // encuentren solos con 'mcbackup conectar', sin repartirla por chat
+        // cada vez que cambia el anfitrion.
+        String direccion = cfg.getProperty("playit.hostname", "").trim();
+        if (direccion.isEmpty()) {
+            System.out.println("\nNo tienes playit.hostname en backup.properties:"
+                             + "\nlos demas van a tener que escribir tu direccion a mano.");
+        }
+
+        String candado = Sesion.tomar(token, carpeta, jugador, direccion, forzar);
 
         // Si cierran con Ctrl+C, al menos que el mundo no quede trabado para todos.
         // Se usa el token de recien: pedir uno nuevo aca es riesgoso, porque un
