@@ -40,13 +40,35 @@ public class Main {
             case "detener", "stop" -> detener();
             case "backup" -> Backup.main(resto);
             case "list" -> listar();
-            case "", "--help", "-h", "help" -> System.out.println(AYUDA);
+            case "" -> {
+                // Doble clic en el jar: Windows lo abre con javaw, sin consola.
+                // Ahi lo util es conectarse, no mostrar una ayuda que nadie ve.
+                if (abiertoConDobleClic()) Puente.desdeDobleClic();
+                else System.out.println(AYUDA);
+            }
+            case "--help", "-h", "help" -> System.out.println(AYUDA);
             default -> {
                 System.err.println("Comando desconocido: " + comando + "\n");
                 System.err.println(AYUDA);
                 System.exit(1);
             }
         }
+    }
+
+    /**
+     * Si esto lo arranco un doble clic en el jar.
+     *
+     * Se mira que ejecutable corre: Windows abre los .jar con javaw.exe, que
+     * es java sin consola. Desde una terminal siempre es java.exe.
+     *
+     * Antes esto miraba System.console(), y estaba mal: tambien da null cuando
+     * la salida esta redirigida a un archivo o a otro comando, asi que un
+     * 'java -jar mcbackup.jar > salida.txt' abria un dialogo invisible y se
+     * quedaba colgado para siempre esperando una respuesta.
+     */
+    static boolean abiertoConDobleClic() {
+        String ejecutable = ProcessHandle.current().info().command().orElse("");
+        return ejecutable.toLowerCase().endsWith("javaw.exe") && Ventana.hayPantalla();
     }
 
     /**

@@ -200,38 +200,39 @@ La configuración inicial de playit está en el [README](README.md).
 
 ## Si te va lento o te desconecta
 
-**Usa el puente.** Necesitas `mcbackup.jar` en una carpeta (bájalo de
-[Releases](../../releases); no hace falta instalar nada más, ni el server ni
-Drive). La primera vez, desde una terminal en esa carpeta:
+**Usa el puente.** Son tres pasos y no hay que escribir ningún comando:
 
-```bash
-java -jar mcbackup.jar conectar
-```
+1. Baja **`mcbackup.jar`** de [Releases](../../releases) a una carpeta
+   cualquiera. No necesitas instalar el server ni conectar Drive ni nada más.
+2. **Doble clic al `mcbackup.jar`.** Se abre una ventana y te pregunta la
+   dirección del server: pega la que te pasó quien está hospedando y dale
+   aceptar.
+3. Abre Minecraft y conéctate a **`localhost`**.
 
-Mide las rutas disponibles hacia quien esté hospedando, elige la mejor, y te
-deja el puente abierto. Después, en Minecraft, te conectas a **`localhost`**.
+Listo. La ventana mide las rutas disponibles, elige la más rápida y se queda
+abierta haciendo de puente mientras juegas.
 
-Esa dirección **no cambia nunca**, ni cuando hospeda otra persona: guárdala en
-tu lista de servidores y olvídate. Deja la ventana abierta mientras juegas.
+**No hay que tocar nada dentro de Minecraft**: ni argumentos de JVM, ni
+configuración. Solo `localhost`.
 
-Si nadie publicó su dirección, pásasela tú:
+La próxima vez, doble clic otra vez: te va a preguntar de nuevo pero con la
+última dirección ya escrita, así que le das aceptar y sigues. Si cambió el
+anfitrión, pegas la nueva encima.
 
-```bash
-java -jar mcbackup.jar conectar algo.gl.at.ply.gg
-```
-
-### Y de ahí en adelante, doble clic
-
-Al terminar, el comando te deja un **`conectar.bat`** en esa carpeta. Las
-siguientes veces no necesitas terminal: doble clic y a jugar. Si le pasaste una
-dirección, queda guardada dentro; si la sacó de Drive, la vuelve a averiguar
-cada vez, que es lo correcto porque el anfitrión cambia.
-
-> El `.bat` lo genera tu propia computadora en vez de venir en la descarga, por
-> la misma razón que `jugar.bat`: Windows bloquea los scripts bajados de
-> internet. Uno creado localmente no lleva esa marca.
+> **Si el doble clic no hace nada**, es que tu Java no quedó asociado a los
+> archivos `.jar`. Abre una terminal en esa carpeta y corre esto una vez:
 >
-> Si no tienes Java instalado, el `.bat` usa el que ya trae Minecraft.
+> ```bash
+> java -jar mcbackup.jar conectar
+> ```
+>
+> Te va a preguntar la dirección igual, y además te deja un **`conectar.bat`**
+> en la carpeta para que de ahí en adelante sí puedas usar doble clic.
+>
+> Ese `.bat` lo genera tu propia computadora en vez de venir en la descarga,
+> por la misma razón que `jugar.bat`: Windows bloquea los scripts bajados de
+> internet. Uno creado localmente no lleva esa marca. Y si no tienes Java
+> instalado, el `.bat` usa el que ya trae Minecraft.
 
 **Por qué esto arregla algo.** Tu proveedor decide por dónde sale cada rango de
 IPs. Algunos mandan ciertos rangos de playit por Estados Unidos aunque el
@@ -259,10 +260,13 @@ de un proveedor, del túnel, o de una sola persona.
 
 ### Sin puente, a mano
 
-Si prefieres no dejar una ventana abierta y `red` te dice que tu vía buena es
-IPv6, puedes habilitarla en el launcher oficial: **Instalaciones → tu perfil →
-los tres puntos → Editar → Más opciones → Argumentos de JVM**, y agregas al
-final de lo que ya diga:
+**Si usas el puente, sáltate esto: no hace falta.** Está acá solo para quien
+prefiera no dejar una ventana abierta.
+
+En ese caso, y solo si `red` te dice que tu vía buena es IPv6, puedes
+habilitarla en el launcher oficial: **Instalaciones → tu perfil → los tres
+puntos → Editar → Más opciones → Argumentos de JVM**, y agregas al final de lo
+que ya diga:
 
 ```
 -Djava.net.preferIPv4Stack=false -Djava.net.preferIPv6Addresses=true

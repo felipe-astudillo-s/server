@@ -1,11 +1,15 @@
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalTime;
@@ -53,13 +57,41 @@ public class Puente {
     static volatile InetAddress rutaAlternativa;
     static volatile int puertoRemoto;
 
+    /** true cuando se abrio con doble clic: no hay consola, hay ventana. */
+    static volatile boolean grafico;
+
     // -----------------------------------------------------------------------
 
+    /**
+     * Entrada cuando alguien hace doble clic en el jar.
+     *
+     * Windows lo abre con javaw, que no da consola: sin ventana, la persona no
+     * veria absolutamente nada. Se abre una y se redirige la salida ahi, asi
+     * el resto del programa sigue usando println sin enterarse.
+     */
+    public static void desdeDobleClic() throws Exception {
+        grafico = true;
+        PrintStream aLaVentana = Ventana.abrirConsola("Puente al server de Minecraft");
+        System.setOut(aLaVentana);
+        System.setErr(aLaVentana);
+        main(new String[0]);
+    }
+
+    /** Corta con un mensaje, por el canal que corresponda. */
+    static void cortar(String mensaje) {
+        if (grafico) {
+            System.out.println(mensaje);
+            Ventana.error(mensaje);
+            System.exit(1);
+        }
+        AuthSetup.exit(mensaje);
+    }
+
     public static void main(String[] args) throws Exception {
-        String destino = args.length > 0 ? args[0].trim() : descubrirDestino();
+        String destino = limpiar(args.length > 0 ? args[0] : descubrirDestino());
 
         if (destino == null || destino.isBlank()) {
-            AuthSetup.exit(SIN_DESTINO);
+            cortar(SIN_DESTINO);
             return;
         }
 
@@ -70,7 +102,7 @@ public class Puente {
         try {
             direcciones = InetAddress.getAllByName(host);
         } catch (UnknownHostException noResuelve) {
-            AuthSetup.exit("\nNo se pudo resolver " + host + ". Revisa que este bien escrita.\n");
+            cortar("\nNo se pudo resolver " + host + ". Revisa que este bien escrita.\n");
             return;
         }
 
@@ -83,7 +115,7 @@ public class Puente {
 
         Red.Medicion mejor = Red.mejorDe(v4, v6);
         if (mejor == null) {
-            AuthSetup.exit(NO_RESPONDE);
+            cortar(NO_RESPONDE);
             return;
         }
 
@@ -94,10 +126,7 @@ public class Puente {
         System.out.printf("%nRuta elegida: %s, %d ms.%n", mejor.familia(), mejor.mediana());
         avisarSiEsMala(mejor);
 
-        // Se recuerda solo lo que el jugador escribio: si la direccion salio de
-        // Drive, el lanzador tiene que volver a preguntarla cada vez, porque el
-        // anfitrion cambia.
-        generarLanzador(args.length > 0 ? args[0].trim() : null);
+        generarLanzador();
 
         abrirPuente();
     }
@@ -135,14 +164,14 @@ public class Puente {
      * la web a todo script descargado y el Control inteligente de aplicaciones
      * lo bloquea. Un archivo escrito por la propia maquina no la lleva.
      *
-     * Se reescribe en cada corrida, asi queda al dia si cambia la direccion.
+     * No lleva la direccion adentro a proposito: el anfitrion cambia, asi que
+     * el lanzador la vuelve a resolver cada vez (Drive, o preguntando con la
+     * ultima ya escrita para que alcance con dar Enter).
      */
-    static void generarLanzador(String direccionExplicita) {
+    static void generarLanzador() {
         Path carpeta = carpetaDelJar();
         String jar = nombreDelJar();
         if (jar == null) return;   // corriendo desde clases sueltas: no aplica
-
-        String argumento = direccionExplicita == null ? "" : " " + direccionExplicita;
 
         try {
             Files.writeString(carpeta.resolve("conectar.bat"), String.join("\r\n",
@@ -167,7 +196,7 @@ public class Puente {
                 ")",
                 "",
                 ":ejecutar",
-                "\"%MCJAVA%\" -jar " + jar + " conectar" + argumento,
+                "\"%MCJAVA%\" -jar " + jar + " conectar",
                 "echo.",
                 "pause",
                 ""));
@@ -183,7 +212,7 @@ public class Puente {
                 "    exit 1",
                 "fi",
                 "",
-                "exec java -jar " + jar + " conectar" + argumento,
+                "exec java -jar " + jar + " conectar",
                 ""));
 
             try {
@@ -239,7 +268,7 @@ public class Puente {
         }
 
         if (oidos.isEmpty()) {
-            AuthSetup.exit("\nNo hay ningun puerto libre entre " + PUERTO_PREFERIDO
+            cortar("\nNo hay ningun puerto libre entre " + PUERTO_PREFERIDO
                          + " y " + (PUERTO_PREFERIDO + PUERTOS_A_PROBAR - 1) + ".\n");
             return;
         }
@@ -472,9 +501,97 @@ public class Puente {
      * despues el candado en Drive, que es el que sabe quien hostea ahora.
      */
     static String descubrirDestino() {
-        String deConfig = Red.hostnameDeConfig();
-        if (deConfig != null && !deConfig.isBlank()) return deConfig;
+        // Drive va primero, y el orden importa: el candado es lo unico que sabe
+        // quien hostea AHORA. playit.hostname es la direccion PROPIA de quien
+        // hostea, asi que en la maquina de alguien que a veces hospeda apuntaria
+        // a su propio tunel en vez de al anfitrion de turno.
+        String deDrive = destinoSegunDrive();
+        if (deDrive != null) return deDrive;
 
+        String deConfig = Red.hostnameDeConfig();
+        if (deConfig != null && !deConfig.isBlank()) {
+            System.out.println("  Uso la direccion de backup.properties: " + deConfig);
+            return deConfig;
+        }
+        return preguntarDireccion();
+    }
+
+    /**
+     * Ultimo recurso: preguntarsela a la persona.
+     *
+     * Se ofrece la del ultimo uso ya escrita, asi lo normal es dar Enter y
+     * seguir. Cuando cambia el anfitrion, se pega la nueva encima.
+     */
+    static String preguntarDireccion() {
+        String ultima = leerUltimaDireccion();
+        try {
+            String elegida = limpiar(grafico
+                ? Ventana.pedirDireccion(ultima)
+                : preguntarEnConsola(ultima));
+
+            if (elegida != null && !elegida.isBlank()) guardarUltimaDireccion(elegida);
+            return elegida;
+
+        } catch (Exception noSePudoPreguntar) {
+            return null;
+        }
+    }
+
+    /**
+     * Deja la direccion como para resolverla.
+     *
+     * Estas direcciones viajan por WhatsApp y Discord y vuelven con sorpresas:
+     * espacios, comillas de un copiar y pegar apurado, y sobre todo caracteres
+     * invisibles como el BOM o el espacio de ancho cero, que no se ven en
+     * pantalla pero rompen la resolucion del nombre. Como un hostname valido
+     * solo usa ASCII imprimible, se tira todo lo demas.
+     */
+    static String limpiar(String crudo) {
+        if (crudo == null) return null;
+        return crudo.replaceAll("[^\\x21-\\x7E]", "")
+                    .replaceAll("^[\"']+|[\"']+$", "");
+    }
+
+    static String preguntarEnConsola(String sugerida) throws IOException {
+        if (sugerida == null) {
+            System.out.print("\nPega la direccion del server (algo.gl.at.ply.gg): ");
+        } else {
+            System.out.println("\nLa ultima vez jugaste en: " + sugerida);
+            System.out.print("Direccion del server (Enter para repetir esa): ");
+        }
+
+        var lector = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
+        String linea = lector.readLine();
+        if (linea == null) return sugerida;   // sin stdin: se usa la de antes
+        linea = linea.trim();
+        return linea.isEmpty() ? sugerida : linea;
+    }
+
+    static Path archivoUltimaDireccion() {
+        return carpetaDelJar().resolve("ultimo-server.txt");
+    }
+
+    static String leerUltimaDireccion() {
+        try {
+            Path archivo = archivoUltimaDireccion();
+            if (!Files.exists(archivo)) return null;
+            String guardada = Files.readString(archivo).trim();
+            return guardada.isEmpty() ? null : guardada;
+        } catch (IOException noSePudoLeer) {
+            return null;
+        }
+    }
+
+    static void guardarUltimaDireccion(String direccion) {
+        try {
+            Files.writeString(archivoUltimaDireccion(), direccion + System.lineSeparator());
+        } catch (IOException noSePudoEscribir) {
+            // Carpeta de solo lectura: la va a tener que escribir de nuevo.
+        }
+    }
+
+    /** null si no hay credenciales, si nadie hostea o si Drive no contesta. */
+    static String destinoSegunDrive() {
         // getAccessToken() corta el programa si no hay credenciales, asi que se
         // comprueba antes: un jugador puede no haber conectado Drive nunca.
         if (!Files.exists(AuthSetup.TOKEN_FILE)) return null;
