@@ -98,54 +98,7 @@ ajustar nada más.
 está arriba pero playit cerrado, nadie va a poder entrar. Es la causa más común
 de "a mí no me entra".
 
-## 5. Comprueba el túnel antes de repartirlo
 
-No todos los túneles rinden igual, y no es cuestión de suerte del momento: a cada
-túnel le toca un rango de IPs, y algunos proveedores chilenos mandan ciertos
-rangos por **Estados Unidos** en vez de dejarlos dentro de Chile. El mismo
-servicio puede darte 14 ms o 200 ms según qué rango te tocó.
-
-Mídelo:
-
-```bash
-java -jar mcbackup.jar red algo.gl.at.ply.gg
-```
-
-Te dice en qué datacenter caes (`Santiago_1`, `Miami_1`, ...) y si conviene
-borrar el túnel y crear otro. **Rehacerlo es gratis y toma segundos**, y sale con
-otra dirección en otro rango. Repite hasta que dé bien.
-
-Hazlo **ahora**, antes de pasarle la dirección al grupo. Es mucho más fácil que
-descubrirlo después con todos adentro quejándose del lag.
-
-> Tu medición solo habla de **tu** línea. Un túnel puede ser bueno desde VTR y
-> malo desde Movistar. Cuando repartas la dirección, pide que dos o tres corran
-> el mismo comando y peguen en el chat la línea que imprime al final: en treinta
-> segundos ves si le sirve a todos.
-
-## 6. Guarda tu dirección
-
-Abre `backup.properties` (lo creó el instalador) y pon:
-
-```
-playit.hostname=algo.gl.at.ply.gg
-```
-
-No es cosmético. Con eso, cada vez que hospedes, tu dirección se publica sola
-junto con el candado del mundo, y quien tenga conectada la cuenta de Drive del
-grupo entra sin que le avises nada. Si lo dejas vacío el server funciona igual,
-pero los demás van a tener que escribir tu dirección a mano.
-
-> **Si `red` te dijo que tu vía buena es IPv6**, tu agente de playit también
-> debería salir por ahí, o esa penalización se la comen todos los que se conecten
-> a ti. Se fija agregando esta línea a `playit.toml` (necesita el agente
-> 0.8.1-beta o superior):
->
-> ```toml
-> control_address = '[2602:fbaf::1]:5523'
-> ```
->
-> Si `red` te dijo que tu vía buena es IPv4, **no toques esto**.
 
 ## Listo
 
