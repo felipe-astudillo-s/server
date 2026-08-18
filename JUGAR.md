@@ -200,52 +200,13 @@ La configuración inicial de playit está en el [README](README.md).
 
 ## Si te va lento o te desconecta
 
-**Usa el puente.** Son tres pasos y no hay que escribir ningún comando:
+Cuando te toca **jugar** en el server de otro y te va con lag o te desconecta,
+casi nunca es tu internet: es la ruta por la que te manda tu proveedor. Los
+pasos completos están en
+**[¿Problemas de conexión?](README.md#problemas-de-conexión)**.
 
-1. Baja **`mcbackup.jar`** de [Releases](../../releases) a una carpeta
-   cualquiera. No necesitas instalar el server ni conectar Drive ni nada más.
-2. **Doble clic al `mcbackup.jar`.** Se abre una ventana y te pregunta la
-   dirección del server: pega la que te pasó quien está hospedando y dale
-   aceptar.
-3. Abre Minecraft y conéctate a **`localhost`**.
-
-Listo. La ventana mide las rutas disponibles, elige la más rápida y se queda
-abierta haciendo de puente mientras juegas.
-
-**No hay que tocar nada dentro de Minecraft**: ni argumentos de JVM, ni
-configuración. Solo `localhost`.
-
-La próxima vez, doble clic otra vez: te va a preguntar de nuevo pero con la
-última dirección ya escrita, así que le das aceptar y sigues. Si cambió el
-anfitrión, pegas la nueva encima.
-
-> **Si el doble clic no hace nada**, es que tu Java no quedó asociado a los
-> archivos `.jar`. Abre una terminal en esa carpeta y corre esto una vez:
->
-> ```bash
-> java -jar mcbackup.jar conectar
-> ```
->
-> Te va a preguntar la dirección igual, y además te deja un **`conectar.bat`**
-> en la carpeta para que de ahí en adelante sí puedas usar doble clic.
->
-> Ese `.bat` lo genera tu propia computadora en vez de venir en la descarga,
-> por la misma razón que `jugar.bat`: Windows bloquea los scripts bajados de
-> internet. Uno creado localmente no lleva esa marca. Y si no tienes Java
-> instalado, el `.bat` usa el que ya trae Minecraft.
-
-**Por qué esto arregla algo.** Tu proveedor decide por dónde sale cada rango de
-IPs. Algunos mandan ciertos rangos de playit por Estados Unidos aunque el
-servidor esté a diez cuadras, y el viaje de ida y vuelta te agrega 180 ms y
-cortes. Medido en una línea VTR de Santiago: el mismo servicio da **18 ms por
-IPv6 y 196 ms por IPv4** en un dominio, y exactamente al revés en otro. No es tu
-wifi ni tu computadora.
-
-Lo importante: **el launcher de Minecraft arranca con
-`java.net.preferIPv4Stack=true`, que apaga IPv6 por completo.** Cuando la vía
-buena es IPv6, el juego no puede usarla ni pegando la IP a mano. El puente corre
-en su propia ventana, sin esa restricción, así que alcanza la ruta que el juego
-no alcanza. El salto extra es por dentro de tu máquina: no se nota.
+El resumen: bajas `mcbackup.jar`, doble clic, pegas la dirección del server, y
+en Minecraft te conectas a `localhost`. No hay que tocar nada del juego.
 
 ### Si quieres ver los números
 

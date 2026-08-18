@@ -23,12 +23,16 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Puente local: elige solo la mejor ruta al server y deja el juego apuntando
  * siempre a localhost.
  *
- * Por que hace falta un proceso aparte y no alcanza con dar una IP mejor: el
- * launcher de Minecraft arranca la JVM con java.net.preferIPv4Stack=true, que
- * no "prefiere" IPv4 sino que apaga el stack IPv6 completo. Cuando la ruta
- * buena es IPv6 -- y en Chile pasa seguido -- el cliente directamente no puede
- * abrir ese socket, ni pegando la IP a mano. Este puente corre en su propia
- * JVM, sin esa restriccion, asi que puede usar la ruta que el juego no alcanza.
+ * Por que hace falta un proceso aparte y no alcanza con dar una IP mejor: Java
+ * prefiere IPv4 salvo que le pasen -Djava.net.preferIPv6Addresses=true, y esa
+ * bandera hay que ponerla a mano en el launcher. Sin ella, cuando la ruta buena
+ * es IPv6 -- y desde Chile pasa seguido -- el cliente ni la intenta. Este
+ * puente corre en su propia JVM, donde la preferencia la elegimos nosotros
+ * segun lo que hayan dado las mediciones.
+ *
+ * (Se suele decir que el launcher ademas fuerza preferIPv4Stack=true, lo que
+ * apagaria IPv6 del todo. No lo pudimos comprobar, y da igual: sea o no asi,
+ * el puente cubre los dos casos.)
  *
  * De regalo, la direccion dentro de Minecraft pasa a ser 'localhost' para
  * siempre: deja de importar quien hospeda hoy.
